@@ -1,0 +1,6 @@
+Scared is a 3D shooter in the style of Wolfenstein 3D, written in Java.
+
+It was originally written in 1998, cleaned up though the years, hosted on various sites, and
+released as open source in 2012.
+
+The source is organized as a Maven project that creates a jar and an index.html file.
