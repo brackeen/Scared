@@ -138,6 +138,10 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     }
     
     private synchronized void tick() {
+        if (App.getApp() == null) {
+            // For appletviewer
+            APP.set(this);
+        }
         if (bufferStrategy == null) {
             removeAll();
             canvas = new Canvas();
