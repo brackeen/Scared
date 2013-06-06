@@ -4,7 +4,10 @@ import com.brackeen.app.App;
 import com.brackeen.app.view.Button;
 import com.brackeen.app.view.ImageView;
 import com.brackeen.app.view.Scene;
+import com.brackeen.scared.entity.Player;
 import java.awt.Color;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 public class TitleScene extends Scene {
     
@@ -67,5 +70,21 @@ public class TitleScene extends Scene {
         });
         addSubview(helpButton);
 
+        setKeyListener(new KeyListener() {
+
+            public void keyTyped(KeyEvent ke) {
+                // Do nothing
+            }
+
+            public void keyPressed(KeyEvent ke) {
+                if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
+                    App.getApp().pushScene(new GameScene());
+                }
+            }
+
+            public void keyReleased(KeyEvent ke) {
+                // Do nothing
+            }
+        });
     }
 }

@@ -165,6 +165,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                 canvas.addKeyListener(this);
                 canvas.addFocusListener(this);
                 canvas.setFocusTraversalKeysEnabled(false);
+                canvas.requestFocus();
                 lastTime = System.nanoTime();
                 remainingTime = 0;
             }
