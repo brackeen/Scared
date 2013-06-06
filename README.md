@@ -4,9 +4,13 @@ Scared is a 3D shooter in the style of Wolfenstein 3D, written in Java.
 
 It was originally written in 1998, cleaned up through the years, hosted on various sites, and released as open source in 2012.
 
-The source is organized as a Maven project.
+## Download
 
-## Download and Build
+An executable jar is available here: [http://www.brackeen.com/scared/](http://www.brackeen.com/scared/)
+
+## Building
+
+The source is organized as a Maven project.
 
 * Install [Java SE 6 JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 * Install [Maven 3](http://maven.apache.org/download.html)
@@ -15,10 +19,4 @@ The source is organized as a Maven project.
 * `cd Scared`
 * Build: `mvn clean install`
 
-In the `target` folder, there is now a jar and an index.html file.
-
-## Running
-
-* Option 1: Open `target/index.html` in your browser.
-* Option 2: Some browsers don't like local applets. If you're having trouble, try appletviewer:
-`appletviewer target/index.html`
+An executable jar is created in the `target` folder.
