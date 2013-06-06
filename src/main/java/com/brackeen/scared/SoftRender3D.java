@@ -523,7 +523,7 @@ public class SoftRender3D extends View {
         int renderY = dstY;
         int renderHeight = dstHeight;
         if (renderY < 0) {
-            f_y = f_dy * -renderY;
+            f_y = mulDiv(toFixedPoint(-renderY), toFixedPoint(srcViewHeight), toFixedPoint(dstHeight));
             renderHeight += renderY;
             renderY = 0;
         }
