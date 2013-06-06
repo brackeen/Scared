@@ -13,6 +13,10 @@ import com.brackeen.scared.entity.Enemy;
 import com.brackeen.scared.entity.Entity;
 import com.brackeen.scared.entity.Key;
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -301,7 +305,19 @@ public class GameScene extends Scene {
         gameOverLoseMessage.setVisible(false);
         addSubview(gameOverLoseMessage);
         
-        //setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        // Hide the cursor
+        try {
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            Dimension size = toolkit.getBestCursorSize(32, 32);
+            if (size != null && size.width > 0 && size.height > 0) {
+                BufferedImage cursorImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
+                Cursor noCursor = toolkit.createCustomCursor(cursorImage, new Point(0,0), "none");
+                setCursor(noCursor);
+            }
+        }
+        catch (Exception ex) {
+            // Ignore it
+        }
         
         setKeyListener(new KeyListener() {
 
