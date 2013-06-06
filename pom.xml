@@ -4,7 +4,7 @@
 
   <groupId>com.brackeen</groupId>
   <artifactId>Scared</artifactId>
-  <version>1.7</version>
+  <version>1.8</version>
   <packaging>jar</packaging>
 
   <name>Scared</name>
@@ -18,7 +18,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>2.5</version>
+        <version>2.6</version>
         <executions>
           <execution>
             <id>copy-resources</id>
@@ -37,6 +37,20 @@
             </configuration>            
           </execution>
         </executions>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.brackeen.scared.Main</mainClass>
+              <packageName>com.brackeen.scared</packageName>
+            </manifest>
+          </archive>
+        </configuration>
       </plugin>
     </plugins>
   </build>
