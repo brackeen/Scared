@@ -248,6 +248,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         
         if (audio == null) {
             log("Could not load audio: " + audioName);
+            audio = BufferedAudio.DUMMY_AUDIO;
         }
         return audio;
     }

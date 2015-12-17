@@ -12,6 +12,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class BufferedAudio {
     
+    public static final BufferedAudio DUMMY_AUDIO = new BufferedAudio(new ArrayList<Stream>());
+    
     public static class Stream {
         
         private final Clip clip;
@@ -86,6 +88,10 @@ public class BufferedAudio {
             try {
                 clip = AudioSystem.getClip();
                 clip.open(AudioSystem.getAudioInputStream(url));
+            }
+            catch (IllegalArgumentException ex) {
+                // org.classpath.icedtea.pulseaudio seems to have this problem
+                throw new IOException(ex);
             }
             catch (UnsupportedAudioFileException ex) {
                 throw new IOException(ex);
