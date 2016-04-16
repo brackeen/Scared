@@ -2,10 +2,9 @@ package com.brackeen.scared.action;
 
 public interface Action {
     
-    public void tick();
+    void tick();
     
-    public void unload();
+    void unload();
     
-    public boolean isFinished();
-    
+    boolean isFinished();
 }

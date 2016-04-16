@@ -15,7 +15,6 @@ public class Tile {
     public static final int TYPE_GENERATOR = 4;
     public static final int TYPE_MOVABLE_WALL = 5;
     public static final int TYPE_EXIT = 6;
-    public static final int NUM_TYPES = 7;
     
     public int type;
     public int subtype;
@@ -59,7 +58,7 @@ public class Tile {
             entity.getTile().removeEntity(entity);
         }
         if (entities == null) {
-            entities = new ArrayList<Entity>();
+            entities = new ArrayList<>();
         }
         entities.add(entity);
         entity.setTile(this);

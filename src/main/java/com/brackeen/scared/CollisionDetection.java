@@ -4,12 +4,12 @@ import com.brackeen.scared.entity.Entity;
 import com.brackeen.scared.entity.Player;
 
 public class CollisionDetection {
-    
-    public static final int WALL_COLLISION_NONE = 0;
-    public static final int WALL_COLLISION_NORTH = 1;
-    public static final int WALL_COLLISION_SOUTH = 2;
-    public static final int WALL_COLLISION_WEST = 4;
-    public static final int WALL_COLLISION_EAST = 8;
+
+    private static final int WALL_COLLISION_NONE = 0;
+    private static final int WALL_COLLISION_NORTH = 1;
+    private static final int WALL_COLLISION_SOUTH = 2;
+    private static final int WALL_COLLISION_WEST = 4;
+    private static final int WALL_COLLISION_EAST = 8;
     
     private static final float SLIDE_ERROR = 0.00002f;
     
@@ -55,14 +55,13 @@ public class CollisionDetection {
     //
     
     private void detectAndHandleEntityCollisions(Entity movingEntity, float oldX, float oldY) {
-        
         Entity[] collidingEntities = checkEntityCollision(movingEntity, oldX, oldY);
         
         // Handle object collision 
         if (collidingEntities == null || collidingEntities.length == 0) {
             return;
         }
-        else if (collidingEntities.length == 1) {
+        if (collidingEntities.length == 1) {
             
             Entity collidingEntity = collidingEntities[0];
             
@@ -176,7 +175,6 @@ public class CollisionDetection {
     Checks the object's path for any collisions.
     */
     private Entity[] checkEntityCollision(Entity movingEntity, float oldX, float oldY) {
-        
         float newX = movingEntity.getX();
         float newY = movingEntity.getY();
         
@@ -214,7 +212,6 @@ public class CollisionDetection {
     Returns up to two entity collisions of the moving entity at it's current location.
     */
     private Entity[] checkEntityCollisionAtPoint(Entity movingEntity) {
-        
         int tileX = (int)movingEntity.getX();
         int tileY = (int)movingEntity.getY();
         
@@ -306,7 +303,6 @@ public class CollisionDetection {
     //
     
     private void detectAndHandleWallCollisions(Entity entity, float oldX, float oldY) {
-    
         boolean isPlayer = (entity instanceof Player);
         
         int collision = checkWallCollision(oldX, oldY, entity.getX(), entity.getY(), entity.getRadius(), isPlayer);        
@@ -400,12 +396,10 @@ public class CollisionDetection {
                 if (dist1Sq <= dist2Sq) {
                     newX = cX1;
                     newY = cY1;
-                    collisionY = false;
                 }
                 else {
                     newX = cX2;
                     newY = cY2;
-                    collisionX = true;
                 }
             }
             else if (collisionX) {
@@ -432,8 +426,8 @@ public class CollisionDetection {
        WALL_COLLISION_NORTH, and/or WALL_COLLISION_SOUTH; 
        or returns WALL_COLLISION_NONE if there is no wall collision.
    */
-   private int checkWallCollision(float oldX, float oldY, float x, float y, float radius, boolean isPlayer) {
-        
+   private int checkWallCollision(float oldX, float oldY, float x, float y, float radius, 
+                                  boolean isPlayer) {
         int originTileX = (int)oldX;
         int originTileY = (int)oldY;
 
@@ -446,9 +440,7 @@ public class CollisionDetection {
 
         // check for solid walls
         for (int tileY = y1; tileY <= y2; tileY++) {
-            
             for (int tileX = x1; tileX <= x2; tileX++) {
-                
                 Tile tile = map.getTileAt(tileX, tileY);
                 
                 // Treat out-of-bounds tiles as "solid"

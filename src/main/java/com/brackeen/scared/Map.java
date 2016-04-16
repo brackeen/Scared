@@ -4,7 +4,7 @@ import com.brackeen.app.App;
 import com.brackeen.scared.action.Action;
 import com.brackeen.scared.action.DoorAction;
 import com.brackeen.scared.action.GeneratorAction;
-import com.brackeen.scared.action.MoveableWallAction;
+import com.brackeen.scared.action.MovableWallAction;
 import com.brackeen.scared.entity.Ammo;
 import com.brackeen.scared.entity.Enemy;
 import com.brackeen.scared.entity.Entity;
@@ -26,24 +26,23 @@ public class Map {
     
     private int width;
     private int height;
-    
-    private Player player;
-    private List<Entity> entities = new ArrayList<Entity>();
+
+    private final MessageQueue messageQueue;
+    private final Player player;
+    private final List<Entity> entities = new ArrayList<>();
+    private final List<Action> actions = new ArrayList<>();
+    private final SoftTexture exitButtonOnTexture;
+    private final SoftTexture generatorOnTexture;
+    private SoftTexture defaultFloorTexture;
     private Tile[][] tiles;
     private boolean electricityOn = true;
-    private List<Action> actions = new ArrayList<Action>();
-    private SoftTexture defaultFloorTexture;
-    private SoftTexture exitButtonOnTexture;
-    private SoftTexture generatorOnTexture;
     private boolean exitFound = false;
     private Tile lastCollidedWall;
-    private MessageQueue messageQueue;
 
     private int numSecrets = 0;
     private int numEnemies = 0;
     
     public Map(HashMap<String, SoftTexture> textureCache, MessageQueue messageQueue, String mapName, Player oldPlayer) throws IOException {
-        
         this.messageQueue = messageQueue;
         
         SoftTexture[] enemyTextures = new SoftTexture[Enemy.NUM_IMAGES];
@@ -141,7 +140,7 @@ public class Map {
                             break;
                         case '*':
                             tile.type = Tile.TYPE_GENERATOR;
-                            electricityOn = false;
+                            setElectricityOn(false);
                             break;
                         case '@':
                             tile.type = Tile.TYPE_MOVABLE_WALL;
@@ -353,13 +352,7 @@ public class Map {
     
     public boolean isSolidAt(int tileX, int tileY) {
         Tile tile = getTileAt(tileX, tileY);
-        
-        if (tile == null) {
-            return true;
-        }
-        else {
-            return tile.isSolid();
-        }
+        return (tile == null || tile.isSolid());
     }
 
     public void notifyPlayerEnteredTile(int tileX, int tileY) {
@@ -391,7 +384,6 @@ public class Map {
         return false;
     }
     private void activateDoor(int tileX, int tileY) {
-        
         // Check to see if there already is a door action
         for (Action action : actions) {
             if (action instanceof DoorAction) {
@@ -413,12 +405,12 @@ public class Map {
 
     public void notifyPlayerTouchedWall(Tile tile, int tileX, int tileY) {
         if (tile.type == Tile.TYPE_MOVABLE_WALL) { 
-            if (tile.state == MoveableWallAction.STATE_DONE) {
+            if (tile.state == MovableWallAction.STATE_DONE) {
                 int dx = tileX - (int)player.getX();
                 int dy = tileY - (int)player.getY();
 
                 if ((dx == 0 && Math.abs(dy) == 1) || (dy == 0 && Math.abs(dx) == 1)) {
-                    actions.add(new MoveableWallAction(this, tileX, tileY));
+                    actions.add(new MovableWallAction(this, tileX, tileY));
                     player.setSecrets(player.getSecrets() + 1);
                 }
             }
@@ -436,7 +428,7 @@ public class Map {
                 tile.state = 1;
                 tile.setTexture(generatorOnTexture);
                 actions.add(new GeneratorAction(this, tileX, tileY));
-                electricityOn = true;
+                setElectricityOn(true);
                 setMessage("The power is now on");
             }
         }
@@ -457,7 +449,7 @@ public class Map {
     
     public List<Entity> getCollisions(Class <? extends Entity> entityClass, 
             float x1, float y1, float x2, float y2) {
-        List<Entity> hitEntities = new ArrayList<Entity>();
+        List<Entity> hitEntities = new ArrayList<>();
         
         float dx = x2 - x1;
         float dy = y2 - y1;
@@ -481,8 +473,7 @@ public class Map {
                 dx = pointX - x1;
                 dy = pointY - y1;
 
-                float u = ((pointX - x1) * (x2 - x1) +
-                    (pointY - y1) * (y2 - y1) ) / segmentLengthSq;
+                float u = (dx * (x2 - x1) + dy * (y2 - y1) ) / segmentLengthSq;
 
                 if (u < 0 || u > 1) {
                     // Not within the segment
@@ -505,7 +496,6 @@ public class Map {
     }
 
     public Point2D.Float getWallCollision(float x, float y, float angleInDegrees) {
-        
         int tileX = (int)x;
         int tileY = (int)y;
         
@@ -545,7 +535,6 @@ public class Map {
     }
     
     private Point2D.Float getCollisionPart2(float x, float y, float dx, float dy, boolean inversed) {
-        
         if (dx == 0) {
             return null;
         }

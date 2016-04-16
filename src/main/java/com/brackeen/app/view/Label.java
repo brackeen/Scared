@@ -3,6 +3,7 @@ package com.brackeen.app.view;
 import com.brackeen.app.BitmapFont;
 import java.awt.Graphics2D;
 
+@SuppressWarnings("unused")
 public class Label extends View {
     
     private BitmapFont font;

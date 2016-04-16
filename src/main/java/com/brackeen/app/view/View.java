@@ -17,10 +17,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class View {
         
     private View superview = null;
-    private List<View> subviews = new ArrayList<View>();
+    private final List<View> subviews = new ArrayList<>();
     private Color backgroundColor = null;
     private float x = 0;
     private float y = 0;
@@ -38,7 +39,7 @@ public class View {
     private FocusListener focusListener;
     private Cursor cursor;
     
-    private AffineTransform worldTransform = new AffineTransform();
+    private final AffineTransform worldTransform = new AffineTransform();
     private boolean localTransformDirty = true;
     private long localTransformModCount = 0;
     private long superviewTransformModCount = 0;
@@ -305,7 +306,6 @@ public class View {
     // Transforms
     
     private void updateTransforms() {
-        
         boolean worldTransformDirty = false;
         
         if (superview == null) {
@@ -337,8 +337,8 @@ public class View {
             localTransformDirty = false;
         }
     }
-    
-    private boolean isClippedToBounds() {
+
+    public boolean isClippedToBounds() {
         return false;
     }
     
@@ -357,10 +357,7 @@ public class View {
     
     public boolean contains(float worldX, float worldY) {
         Point2D.Float local = getLocalLocation(worldX, worldY);
-        if (local == null) {
-            return false;
-        }
-        return (local.x >= 0 && local.x < getWidth() && local.y >= 0 && local.y < getHeight());
+        return (local != null && local.x >= 0 && local.x < getWidth() && local.y >= 0 && local.y < getHeight());
     }
     
     public View pick(float worldX, float worldY) {

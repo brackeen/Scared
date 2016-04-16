@@ -3,6 +3,7 @@ package com.brackeen.app.view;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
+@SuppressWarnings("unused")
 public class ImageView extends View {
     
     private BufferedImage image;

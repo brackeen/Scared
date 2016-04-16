@@ -4,7 +4,6 @@ import com.brackeen.app.App;
 import com.brackeen.app.view.Button;
 import com.brackeen.app.view.ImageView;
 import com.brackeen.app.view.Scene;
-import com.brackeen.scared.entity.Player;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -13,7 +12,6 @@ public class TitleScene extends Scene {
     
     @Override
     public void onLoad() {
-        
         App app = App.getApp();
         
         App.log("Scared Console");
@@ -72,16 +70,19 @@ public class TitleScene extends Scene {
 
         setKeyListener(new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent ke) {
                 // Do nothing
             }
 
+            @Override
             public void keyPressed(KeyEvent ke) {
                 if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
                     App.getApp().pushScene(new GameScene());
                 }
             }
 
+            @Override
             public void keyReleased(KeyEvent ke) {
                 // Do nothing
             }

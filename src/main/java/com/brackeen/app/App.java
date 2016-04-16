@@ -36,11 +36,11 @@ import javax.swing.Timer;
 The App class sets up the animation loop and provides methods to load images and set the 
 current scene.
 */
+@SuppressWarnings("unused")
 public abstract class App extends Applet implements MouseListener, MouseMotionListener, 
         KeyListener, FocusListener {
     
-    private static final InheritableThreadLocal<App> APP =
-            new InheritableThreadLocal<App>();
+    private static final InheritableThreadLocal<App> APP = new InheritableThreadLocal<>();
     
     public static App getApp() {
         return APP.get();
@@ -92,14 +92,13 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     private long lastTime = 0;
     private double remainingTime = 0;
     
-    private List<String> log = new ArrayList<String>();
+    private final List<String> log = new ArrayList<>();
     
-    private final HashMap<String, WeakReference<BufferedImage>> imageCache =
-            new HashMap<String, WeakReference<BufferedImage>>();
-    private final HashMap<String, BufferedAudio> loadedAudio = new HashMap<String, BufferedAudio>();
-    private final Stack<Scene> sceneStack = new Stack<Scene>();
-    private List<View> prevViewsWithTouchInside = new ArrayList<View>();
-    private List<View> currViewsWithTouchInside = new ArrayList<View>();
+    private final HashMap<String, WeakReference<BufferedImage>> imageCache = new HashMap<>();
+    private final HashMap<String, BufferedAudio> loadedAudio = new HashMap<>();
+    private final Stack<Scene> sceneStack = new Stack<>();
+    private List<View> prevViewsWithTouchInside = new ArrayList<>();
+    private List<View> currViewsWithTouchInside = new ArrayList<>();
     private BufferStrategy bufferStrategy;
     private Canvas canvas;
     private int mouseX = -1;
@@ -327,7 +326,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                 if (url != null) {
                     image = ImageIO.read(url);
                     if (image != null) {
-                        imageCache.put(imageName, new WeakReference<BufferedImage>(image));
+                        imageCache.put(imageName, new WeakReference<>(image));
                     }
                 }
             }

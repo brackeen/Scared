@@ -31,7 +31,6 @@ public class Enemy extends Entity {
     private static final float STEP_SIZE = 0.05f;
 
     private final SoftTexture[] textures;
-    private final int type;
     private final Map map;
     private int state;
     private int health;
@@ -45,7 +44,6 @@ public class Enemy extends Entity {
     
     public Enemy(Map map, SoftTexture[] textures, float x, float y, int type) {
         super(0.25f, x, y);
-        this.type = type;
         this.textures = textures;
         this.map = map;
         setTexture(textures[0]);
@@ -84,10 +82,6 @@ public class Enemy extends Entity {
         }
     }
 
-    public boolean isDead() {
-        return state == STATE_DEAD;
-    }
-    
     private void setState(int state) {
         if (this.state != state) {
             this.state = state;
@@ -96,10 +90,6 @@ public class Enemy extends Entity {
             }
             ticksRemaining = STATE_TICKS[state];
         }
-    }
-    
-    public int getType() {
-        return type;
     }
 
     public void hurt(int points) {

@@ -12,7 +12,7 @@ public class Player extends Entity {
     public static final int DEFAULT_AMMO = 20;
     public static final int DEFAULT_HEALTH = MAX_HEALTH;
 
-    private Map map;
+    private final Map map;
     private int health = DEFAULT_HEALTH;
     private int ammo = DEFAULT_AMMO;
     
@@ -138,6 +138,4 @@ public class Player extends Entity {
     public void addKey(int key) {
         keys |= (1 << key);
     }
-
 }
-

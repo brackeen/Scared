@@ -7,11 +7,11 @@ import com.brackeen.scared.entity.Player;
 
 public class DoorAction implements Action {
     
-    public static final int DONE = 0;
-    public static final int OPENING = 1;
-    public static final int OPEN = 2;
-    public static final int CLOSING = 3;
-    public static final int STAY_OPEN_FOREVER = 4;
+    private static final int DONE = 0;
+    private static final int OPENING = 1;
+    private static final int OPEN = 2;
+    private static final int CLOSING = 3;
+    private static final int STAY_OPEN_FOREVER = 4;
     
     private static final int TICKS_TO_OPEN = 12; // Fast enough to not stop the player
     private static final int TICKS_TO_CLOSE = 24;
@@ -50,16 +50,18 @@ public class DoorAction implements Action {
         ticks = 0;
     }
 
+    @Override
     public void unload() {
         
     }
 
+    @Override
     public boolean isFinished() {
         return (state == tile.state && (state == DONE || state == STAY_OPEN_FOREVER));
     }
 
+    @Override
     public void tick() {
-    
         if (isFinished()) {
             return;
         }
@@ -119,11 +121,6 @@ public class DoorAction implements Action {
         Player p = map.getPlayer();
         float dx = Math.abs(p.getX() - (x + 0.5f));
         float dy = Math.abs(p.getY() - (y + 0.5f));
-        if (dx < 1.5f && dy < 1.5f) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        return (dx >= 1.5f || dy >= 1.5f);
     }
 }

@@ -10,6 +10,7 @@ import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
+@SuppressWarnings("unused")
 public class BufferedAudio {
     
     public static final BufferedAudio DUMMY_AUDIO = new BufferedAudio(new ArrayList<Stream>());
@@ -82,25 +83,17 @@ public class BufferedAudio {
             return null;
         }
         
-        List<Stream> streams = new ArrayList<Stream>(maxSimultaneousCopies);
+        List<Stream> streams = new ArrayList<>(maxSimultaneousCopies);
         for (int i = 0; i < maxSimultaneousCopies; i++) {
-            Clip clip = null;
             try {
-                clip = AudioSystem.getClip();
+                Clip clip = AudioSystem.getClip();
                 clip.open(AudioSystem.getAudioInputStream(url));
-            }
-            catch (IllegalArgumentException ex) {
-                // org.classpath.icedtea.pulseaudio seems to have this problem
-                throw new IOException(ex);
-            }
-            catch (UnsupportedAudioFileException ex) {
-                throw new IOException(ex);
-            }            
-            catch (LineUnavailableException ex) {
-                throw new IOException(ex);
-            }
-            if (clip != null) {
                 streams.add(new Stream(clip));
+            }
+            catch (IllegalArgumentException | UnsupportedAudioFileException |
+                    LineUnavailableException ex) {
+                // org.classpath.icedtea.pulseaudio seems to throw IllegalArgumentException
+                throw new IOException(ex);
             }
         }
         

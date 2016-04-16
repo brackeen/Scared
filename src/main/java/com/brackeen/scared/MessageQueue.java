@@ -7,7 +7,7 @@ import java.util.List;
 public class MessageQueue {
     
     private static class Message {
-        String text;
+        final String text;
         int ticksRemaining;
         
         public Message(String text) {
@@ -16,12 +16,12 @@ public class MessageQueue {
         }
     }
     
-    private List<Message> messages;
+    private final List<Message> messages;
     private final int maxSize;
 
     public MessageQueue(int size) {
         maxSize = size;
-        messages = new ArrayList<Message>();
+        messages = new ArrayList<>();
     }
     
     public void tick() {

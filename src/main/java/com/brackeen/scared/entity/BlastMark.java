@@ -4,7 +4,7 @@ import com.brackeen.scared.SoftTexture;
 
 public class BlastMark extends Entity {
     
-    private SoftTexture[] textures;
+    private final SoftTexture[] textures;
     private int countdown;
     
     public BlastMark(SoftTexture[] textures, float x, float y, int countdown) {

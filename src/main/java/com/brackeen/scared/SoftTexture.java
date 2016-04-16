@@ -131,8 +131,7 @@ public class SoftTexture {
     public void draw(SoftTexture src, int x, int y, boolean srcOpaque) {
         draw(src, x, y, 0, 0, src.width, src.height, srcOpaque);
     }
-        
-        
+    
     /**
         Draws the specified texture (source) onto this texture (dest).
     */

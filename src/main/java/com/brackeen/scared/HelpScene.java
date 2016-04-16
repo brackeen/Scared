@@ -12,7 +12,6 @@ public class HelpScene extends Scene {
     
     @Override
     public void onLoad() {
-        
         App app = App.getApp();
         
         setBackgroundColor(new Color(12, 12, 12));
@@ -36,16 +35,19 @@ public class HelpScene extends Scene {
         
         setKeyListener(new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent ke) {
 
             }
 
+            @Override
             public void keyPressed(KeyEvent ke) {
                 if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     App.getApp().popScene();
                 }
             }
 
+            @Override
             public void keyReleased(KeyEvent ke) {
                 
             }

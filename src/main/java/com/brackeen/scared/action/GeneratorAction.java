@@ -8,10 +8,10 @@ import com.brackeen.scared.entity.Player;
 
 public class GeneratorAction implements Action {
 
-    private Player player;
+    private final Player player;
+    private final int sourceTileX;
+    private final int sourceTileY;
     private BufferedAudio.Stream stream;
-    private int sourceTileX;
-    private int sourceTileY;
     
     public GeneratorAction(Map map, int x, int y) {
         this.player = map.getPlayer();
@@ -24,6 +24,7 @@ public class GeneratorAction implements Action {
         stream = audio.play(volume, pan, true);
     }
     
+    @Override
     public void tick() {
         if (stream != null) {
             stream.setVolume(SoundPlayer3D.getVolume(player, sourceTileX, sourceTileY));
@@ -31,6 +32,7 @@ public class GeneratorAction implements Action {
         }
     }
 
+    @Override
     public void unload() {
         if (stream != null) {
             stream.stop();
@@ -38,6 +40,7 @@ public class GeneratorAction implements Action {
         }
     }
 
+    @Override
     public boolean isFinished() {
         return stream == null;
     }

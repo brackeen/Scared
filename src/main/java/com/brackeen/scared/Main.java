@@ -10,6 +10,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 public class Main extends App {
     
@@ -23,7 +24,7 @@ public class Main extends App {
                 // Create frame
                 JFrame frame = new JFrame("Scared");
                 final Container contentPane = frame.getContentPane();
-                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 contentPane.setBackground(Color.BLACK);
 
                 // Add applet to frame

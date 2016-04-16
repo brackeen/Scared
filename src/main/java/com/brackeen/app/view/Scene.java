@@ -1,5 +1,6 @@
 package com.brackeen.app.view;
 
+@SuppressWarnings("unused")
 public class Scene extends View {
     
     private View focusedView = this;

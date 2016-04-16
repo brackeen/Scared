@@ -129,13 +129,13 @@ public class SoftRender3D extends View {
     
     private Map map;
     private SoftTexture background;
-    private List<Tile> visibleFloors = new ArrayList<Tile>();
+    private final List<Tile> visibleFloors = new ArrayList<>();
     
-    private SoftTexture[] doorTextures = new SoftTexture[4];
-    private SoftTexture doorSideTexture;
-    private SoftTexture windowTexture;
-    private SoftTexture[] generatorTextures = new SoftTexture[2];
-    private SoftTexture[] exitTextures = new SoftTexture[2];
+    private final SoftTexture[] doorTextures = new SoftTexture[4];
+    private final SoftTexture doorSideTexture;
+    private final SoftTexture windowTexture;
+    private final SoftTexture[] generatorTextures = new SoftTexture[2];
+    private final SoftTexture[] exitTextures = new SoftTexture[2];
     
     private float fov;
     private float focalDistance;
@@ -147,10 +147,10 @@ public class SoftRender3D extends View {
     private int cameraAngle;
     
     private int[] rayAngleTable;
-    private int[] f_cosTable;
-    private int[] f_sinTable;
-    private int[] f_tanTable;
-    private int[] f_cotTable;
+    private final int[] f_cosTable;
+    private final int[] f_sinTable;
+    private final int[] f_tanTable;
+    private final int[] f_cotTable;
     
     private Ray[] rays;
     
@@ -158,7 +158,6 @@ public class SoftRender3D extends View {
     
     @param width width in pixels
     @param height height in pixels
-    @param fovInDegrees field of view in degrees
     */
     public SoftRender3D(HashMap<String, SoftTexture> textureCache, float width, float height) {
         this.fov = 60;
@@ -342,7 +341,6 @@ public class SoftRender3D extends View {
     }
     
     private void drawFloors() {
-        
         int[] dstData = dstBuffer.getData();
         int viewWidth = dstBuffer.getWidth();
         int viewHeight = dstBuffer.getHeight();
@@ -502,7 +500,6 @@ public class SoftRender3D extends View {
     }
     
     private void drawTextureSliver(SoftTexture srcTexture, boolean srcOpaque, int sliver, int depth, int dstX, int dstY, int dstHeight) {
-        
         // Mip-mapping. Use half-size textures if available
         while (dstHeight < srcTexture.getHeight() && srcTexture.hasHalfSizeTexture()) {
             srcTexture = srcTexture.getHalfSizeTexture();
@@ -555,7 +552,6 @@ public class SoftRender3D extends View {
     }
     
     private void drawPixel(int[] dstData, int dstOffset, int srcColor, int depth) {
-                    
         int srcA = srcColor >>> 24;
         if (srcA == 0xff && depth <= 256) {
             dstData[dstOffset] = srcColor;
@@ -588,13 +584,14 @@ public class SoftRender3D extends View {
         }
     }
     
-    private List<Entity> getVisibileEntities() {
+    private List<Entity> getVisibleEntities() {
         float cameraX = toFloat(f_cameraX);
         float cameraY = toFloat(f_cameraY);
         float cosAngle = (float)Math.cos(angleToRadians(cameraAngle));
         float sinAngle = (float)Math.sin(angleToRadians(cameraAngle));
+        
         // Get visible objects
-        List<Entity> visibleEntities = new ArrayList<Entity>();
+        List<Entity> visibleEntities = new ArrayList<>();
         for (Tile tile : visibleFloors) {
             tile.renderVisible = 0;
             List<Entity> entities = tile.getEntities();
@@ -654,14 +651,13 @@ public class SoftRender3D extends View {
             }
         }
         
-        return getVisibileEntities();
+        return getVisibleEntities();
     }
     
     /**
     Cast a ray looking for an x- or y-intersection.
     */
     private void raycast(Ray ray, int dir, int f_rayX, int f_rayY, int f_rayDX, int f_rayDY, boolean checkingY) {
-        
         final int windowMask = checkingY ? WINDOW_NORTH_SOUTH : WINDOW_WEST_EAST;
         int tileX;
         int tileY;
@@ -821,7 +817,6 @@ public class SoftRender3D extends View {
     }
     
     private void addVisibleFloor(int tileX, int tileY) {
-        
         Tile centerTile = map.getTileAt(tileX, tileY);
         
         // If this tile has already been added as a center tile, do nothing.

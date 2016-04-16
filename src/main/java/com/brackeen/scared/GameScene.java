@@ -32,7 +32,7 @@ import java.util.List;
 
 public class GameScene extends Scene {
     
-    private static final boolean DEBUG_ALLOW_CAMERA_Z_CHANGES = false;
+    private static final boolean DEBUG_ALLOW_CAMERA_Z_CHANGES = Boolean.parseBoolean("false");
     
     private static final int NUM_LEVELS = 7;
     
@@ -57,7 +57,7 @@ public class GameScene extends Scene {
     private static final int ACTION_NEW_LEVEL = 1;
     private static final int ACTION_WIN = 2;
         
-    private HashMap<String, SoftTexture> textureCache = new HashMap<String, SoftTexture>();
+    private final HashMap<String, SoftTexture> textureCache = new HashMap<>();
     
     private boolean keyLeft = false;
     private boolean keyRight = false;
@@ -83,14 +83,14 @@ public class GameScene extends Scene {
     private int nextAction = ACTION_NONE;
     private int nextActionTicksRemaining;
     
-    private SoftTexture[] blastTextures = new SoftTexture[3];
+    private final SoftTexture[] blastTextures = new SoftTexture[3];
     
     // HUD
-    private MessageQueue messageQueue = new MessageQueue(4);
-    private Label[] messageLabels = new Label[4];
+    private final MessageQueue messageQueue = new MessageQueue(4);
+    private final Label[] messageLabels = new Label[4];
     private Label focusLostLabel;
     private boolean paused;
-    private ImageView[] keys = new ImageView[Key.NUM_KEYS];
+    private final ImageView[] keys = new ImageView[Key.NUM_KEYS];
     private View normalStats;
     private View specialStats;
     private Label healthLabel;
@@ -110,7 +110,6 @@ public class GameScene extends Scene {
     
     @Override
     public void onLoad() {
-        
         App app = App.getApp();
         
         BitmapFont messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
@@ -168,8 +167,7 @@ public class GameScene extends Scene {
         for (String textureName : textures) {
             SoftTexture texture = null;
             SoftTexture lastTexture = null;
-            for (int i = 0; i < mipMapSizes.length; i++) {
-                int size = mipMapSizes[i];
+            for (int size : mipMapSizes) {
                 String fullname = "/texture" + size + "/" + textureName;
                 SoftTexture thisTexture = getTexture(fullname, false);
                 if (lastTexture == null) {
@@ -321,10 +319,12 @@ public class GameScene extends Scene {
         
         setKeyListener(new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent ke) {
                 // Do nothing
             }
 
+            @Override
             public void keyPressed(KeyEvent ke) {
                 if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     App.getApp().pushScene(new ConsoleScene(GameScene.this));
@@ -375,6 +375,7 @@ public class GameScene extends Scene {
         });
         setMouseMotionListener(new MouseMotionListener() {
 
+            @Override
             public void mouseDragged(MouseEvent me) {
                 int mouseX = me.getX();
                 int mouseY = me.getY();
@@ -386,6 +387,7 @@ public class GameScene extends Scene {
                 }
             }
 
+            @Override
             public void mouseMoved(MouseEvent me) {
                 int mouseX = me.getX();
                 int mouseY = me.getY();
@@ -400,11 +402,13 @@ public class GameScene extends Scene {
         
         setFocusListener(new FocusListener() {
 
+            @Override
             public void focusGained(FocusEvent fe) {
                 focusLostLabel.setVisible(false);
                 paused = false;
             }
 
+            @Override
             public void focusLost(FocusEvent fe) {
                 focusLostLabel.setVisible(true);
                 paused = true;
@@ -605,7 +609,6 @@ public class GameScene extends Scene {
 
     @Override
     public void onTick() {
-        
         if (paused) {
             resetKeys();
             return;
@@ -673,8 +676,6 @@ public class GameScene extends Scene {
         }
 
         if (player.isAlive()) {
-            
-            
             float displayWeaponOffset = crosshair.getX();
             displayWeaponOffset = Math.max(displayWeaponOffset, 60);
             displayWeaponOffset = Math.min(displayWeaponOffset, getWidth() - 180);

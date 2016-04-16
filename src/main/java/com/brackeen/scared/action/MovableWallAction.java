@@ -5,24 +5,24 @@ import com.brackeen.scared.Map;
 import com.brackeen.scared.SoftTexture;
 import com.brackeen.scared.Tile;
 
-public class MoveableWallAction implements Action {
-    
+public class MovableWallAction implements Action {
+
     public static final int STATE_DONE = 0;
-    public static final int STATE_MOVING = 1;
+    private static final int STATE_MOVING = 1;
     
     private static final int TICKS_PER_TILE_MOVE = 60;
     
-    private Map map;
+    private final Map map;
     private int x;
     private int y;
-    private int dx;
-    private int dy;
+    private final int dx;
+    private final int dy;
     private Tile tile;
-    private SoftTexture floorTexture;
+    private final SoftTexture floorTexture;
     private int index;
     private int ticks;
     
-    public MoveableWallAction(Map map, int x, int y) {
+    public MovableWallAction(Map map, int x, int y) {
         int playerTileX = (int)map.getPlayer().getX();
         int playerTileY = (int)map.getPlayer().getY();
         
@@ -44,14 +44,17 @@ public class MoveableWallAction implements Action {
         ticks = 0;
     }
 
+    @Override
     public void unload() {
         // Do nothing
     }
 
+    @Override
     public boolean isFinished() {
         return (index > 2);
     }
-    
+
+    @Override
     public void tick() {
         if (isFinished()) {
             return;
@@ -67,7 +70,7 @@ public class MoveableWallAction implements Action {
             tile.setTexture(floorTexture);
             tile.type = 0;
             tile.subtype = 0;
-            tile.state = 0;
+            tile.state = STATE_DONE;
             tile.renderState = 0;
 
             x += dx;
@@ -83,7 +86,7 @@ public class MoveableWallAction implements Action {
             if (index == 2) {
                 index = 3;
                 tile.type = Tile.TYPE_WALL;
-                tile.state = 0;
+                tile.state = STATE_DONE;
                 tile.renderState = 0;
             }
             ticks = 0;

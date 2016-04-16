@@ -7,12 +7,6 @@ public class Entity implements Comparable<Entity> {
     
     public static final int DEFAULT_PIXELS_PER_TILE = 64;
     
-    public enum CollisionType {
-        NONE,
-        SLIDE,
-        STOP,
-    }
-    
     private Tile tile;
     private float radius;
     private float x;

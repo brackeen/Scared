@@ -6,10 +6,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 
+@SuppressWarnings("unused")
 public class Button extends View implements MouseListener {
     
     public interface Listener {
-        public void buttonClicked(Button button);
+        void buttonClicked(Button button);
     }
 
     private enum State {
@@ -170,6 +171,7 @@ public class Button extends View implements MouseListener {
         g.drawImage(getDisplayedImage(), null, null);
     }
 
+    @Override
     public void mouseEntered(MouseEvent me) {
         if (armed && me.getID() == MouseEvent.MOUSE_DRAGGED) {
             setState(State.PRESSED);
@@ -179,25 +181,29 @@ public class Button extends View implements MouseListener {
         }
     }
 
+    @Override
     public void mouseExited(MouseEvent me) {
         setState(State.NORMAL);
     }
 
+    @Override
     public void mouseClicked(MouseEvent me) {
         // Do nothing - press+release events sent
     }
 
+    @Override
     public void mousePressed(MouseEvent me) {
         setState(State.PRESSED);
         rootWhenArmed = getRoot();
         armed = true;
     }
 
+    @Override
     public void mouseReleased(MouseEvent me) {
         View root = getRoot();
         View view = root.pick(me.getX(), me.getY());
         boolean isOver = isAncestorOf(view);
-        boolean isSameRoot = root != null && rootWhenArmed == root;
+        boolean isSameRoot = rootWhenArmed == root;
         boolean isTap = armed && state == State.PRESSED && isOver && isSameRoot;
 
         if (isOver) {

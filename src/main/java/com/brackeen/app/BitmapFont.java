@@ -3,6 +3,7 @@ package com.brackeen.app;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
+@SuppressWarnings("unused")
 public class BitmapFont {
     
     private final BufferedImage image;

@@ -13,10 +13,10 @@ import java.util.List;
 
 public class ConsoleScene extends Scene {
     
-    private static int CURSOR_BLINK_TICKS = 20;
+    private static final int CURSOR_BLINK_TICKS = 20;
     private static final String PROMPT = "] ";
 
-    private GameScene gameScene;
+    private final GameScene gameScene;
     
     private View textView;
     private String currentLine = "";
@@ -29,7 +29,6 @@ public class ConsoleScene extends Scene {
     
     @Override
     public void onLoad() {
-        
         App app = App.getApp();
         
         final BitmapFont messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
@@ -78,6 +77,7 @@ public class ConsoleScene extends Scene {
         
         setKeyListener(new KeyListener() {
 
+            @Override
             public void keyTyped(KeyEvent ke) {
                 char ch = ke.getKeyChar();
                 if (messageFont.canDisplay(ch)) {
@@ -86,6 +86,7 @@ public class ConsoleScene extends Scene {
                 setCursorOn(true);
             }
 
+            @Override
             public void keyPressed(KeyEvent ke) {
                 if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     App.getApp().popScene();
@@ -103,6 +104,7 @@ public class ConsoleScene extends Scene {
                 }
             }
 
+            @Override
             public void keyReleased(KeyEvent ke) {
                 
             }
