@@ -42,7 +42,7 @@ public class Map {
     private int numSecrets = 0;
     private int numEnemies = 0;
     
-    public Map(HashMap<String, SoftTexture> textureCache, MessageQueue messageQueue, String mapName, Player oldPlayer) throws IOException {
+    public Map(HashMap<String, SoftTexture> textureCache, MessageQueue messageQueue, String mapName, Player oldPlayer, Stats stats) throws IOException {
         this.messageQueue = messageQueue;
         
         SoftTexture[] enemyTextures = new SoftTexture[Enemy.NUM_IMAGES];
@@ -155,7 +155,7 @@ public class Map {
                             break;
                         case '^':
                             tile.type = Tile.TYPE_NOTHING;
-                            addEntity(new Enemy(this, enemyTextures, x + 0.5f, y + 0.5f, 1));
+                            addEntity(new Enemy(this, stats, enemyTextures, x + 0.5f, y + 0.5f, 1));
                             numEnemies++;
                             break;
                         case 'b':

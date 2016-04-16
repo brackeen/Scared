@@ -91,8 +91,11 @@ public class Player extends Entity {
         super.setTile(tile);
     }
     
-    public void hurt(int points) {
-        if (!godMode && isAlive() && points > 0) {
+    public boolean hurt(int points) {
+        if (godMode || !isAlive() || points <= 0) {
+            return false;
+        }
+        else {
             hitWarningTicksRemaining = 12;
             health -= points;
             if (health <= 0) {
@@ -103,6 +106,7 @@ public class Player extends Entity {
             else if (points > 15) {
                 App.getApp().getAudio("/sound/player_hurt.wav", 1).play();
             }
+            return true;
         }
     }
     

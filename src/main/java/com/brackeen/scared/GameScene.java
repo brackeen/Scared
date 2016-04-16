@@ -33,8 +33,8 @@ import java.util.List;
 public class GameScene extends Scene {
     
     private static final boolean DEBUG_ALLOW_CAMERA_Z_CHANGES = Boolean.parseBoolean("false");
-    
-    private static final int NUM_LEVELS = 7;
+
+    public static final int NUM_LEVELS = 7;
     
     private static final float MIN_RUN_VELOCITY = -0.055f;
     private static final float MAX_RUN_VELOCITY = 0.078f;
@@ -77,6 +77,8 @@ public class GameScene extends Scene {
     private CollisionDetection collisionDetection;
     private int level;
     private boolean hasWon;
+    private boolean showCrosshair = true;
+    private Stats stats = new Stats();
     
     private float runVelocity = 0;
     private float strafeVelocity = 0;
@@ -113,8 +115,8 @@ public class GameScene extends Scene {
     private int gunBlastCountdown;
     private int deathTicksRemaining;
     private View warningSplash;
-    private Label gameOverWinMessage;
-    private Label gameOverLoseMessage;
+    private View gameOverBackground;
+    private View gameOverMessage;
     private ImageView crosshair;
     
     @Override
@@ -281,16 +283,6 @@ public class GameScene extends Scene {
         focusLostLabel.setVisible(false);
         addSubview(focusLostLabel);
         
-        // Win/lose messages
-        gameOverWinMessage = new Label(messageFont, "YOU WIN. Click to play again.");
-        gameOverWinMessage.setAnchor(0.5f, 0.5f);
-        gameOverWinMessage.setVisible(false);
-        addSubview(gameOverWinMessage);
-        gameOverLoseMessage = new Label(messageFont, "Click to try again");
-        gameOverLoseMessage.setAnchor(0.5f, 0.5f);
-        gameOverLoseMessage.setVisible(false);
-        addSubview(gameOverLoseMessage);
-        
         onResize();
         
         // Hide the cursor
@@ -320,7 +312,9 @@ public class GameScene extends Scene {
                     App.getApp().pushScene(new ConsoleScene(GameScene.this));
                 }
                 else if (ke.getKeyCode() == KeyEvent.VK_X) {
-                    crosshair.setVisible(!crosshair.isVisible());
+                    if (map != null && map.getPlayer().isAlive()) {
+                        showCrosshair = !showCrosshair;
+                    }
                 }
                 else if (ke.getKeyCode() == KeyEvent.VK_R) {
                     fpsLabel.setVisible(!fpsLabel.isVisible());
@@ -403,7 +397,7 @@ public class GameScene extends Scene {
 
             @Override
             public void focusLost(FocusEvent fe) {
-                focusLostLabel.setVisible(true);
+                focusLostLabel.setVisible(gameOverMessage == null);
                 paused = true;
             }
         });
@@ -454,8 +448,12 @@ public class GameScene extends Scene {
         
         // UI Labels
         focusLostLabel.setLocation(getWidth() / 2, getHeight() / 2);
-        gameOverWinMessage.setLocation(getWidth() / 2, focusLostLabel.getY() + focusLostLabel.getHeight());
-        gameOverLoseMessage.setLocation(getWidth() / 2, focusLostLabel.getY() + focusLostLabel.getHeight());
+        if (gameOverMessage != null) {
+            gameOverMessage.setLocation(getWidth() / 2, getHeight() / 2);
+        }
+        if (gameOverBackground != null) {
+            gameOverBackground.setSize(getWidth(), getHeight());
+        }
     }
     
     private SoftTexture getTexture(String name, boolean cache) {
@@ -489,7 +487,7 @@ public class GameScene extends Scene {
         }
         
         try {
-            map = new Map(textureCache, messageQueue, "/maps/level" + level + ".txt", oldPlayer);
+            map = new Map(textureCache, messageQueue, "/maps/level" + level + ".txt", oldPlayer, stats);
         }
         catch (IOException ex) {
             ex.printStackTrace();
@@ -510,8 +508,14 @@ public class GameScene extends Scene {
         turnVelocity = 0;
         
         hasWon = false;
-        gameOverWinMessage.setVisible(false);
-        gameOverLoseMessage.setVisible(false);
+        if (gameOverMessage != null) {
+            gameOverMessage.removeFromSuperview();
+            gameOverMessage = null;
+        }
+        if (gameOverBackground != null) {
+            gameOverBackground.removeFromSuperview();
+            gameOverBackground = null;
+        }
         
         playSound("/sound/startlevel.wav");
     }
@@ -549,15 +553,15 @@ public class GameScene extends Scene {
         Player player = map.getPlayer();
         
         if ("HELP".equalsIgnoreCase(command)) {
-            return  "restart  Restart the level.\n" +
-                    "quit     Quit to main menu.\n" +
+            return  "stats    Show stats.\n" +
                     "ammo     Give yourself some ammo.\n" +
                     "health   Give yourself a health kit.\n" +
                     "key x    Give yourself key x (from 1 to " + Key.NUM_KEYS + ").\n" +
                     "level x  Skip to level x (from 1 to " + NUM_LEVELS + ").\n" +
                     "freeze   Freeze all enemies in place.\n" +
                     "cheat    Give yourself invincibility.\n" +
-                    "debug    Show debug info.";
+                    "debug    Show debug info.\n" +
+                    "quit     Quit to main menu.\n";
         }
         else if ("QUIT".equalsIgnoreCase(command)) {
             App.getApp().popScene(); // Back to game
@@ -566,6 +570,9 @@ public class GameScene extends Scene {
         }
         else if ("4 8 15 16 23 42".equalsIgnoreCase(command)) {
             return "Timer reset to 108 minutes.";
+        }
+        else if ("STATS".equalsIgnoreCase(command)) {
+            return stats.getDescription(map, level + 1);
         }
         else if ("DEBUG".equalsIgnoreCase(command)) {
             float dx = (float)Math.cos(Math.toRadians(player.getDirection()));
@@ -576,14 +583,10 @@ public class GameScene extends Scene {
                     "actions=" + map.getNumActions() + "\n" +
                     "entities=" + map.getNumEntities();
         }
-        else if ("RESTART".equalsIgnoreCase(command)) {
-            setLevel(level);
-            App.getApp().popScene(); // Back to game
-            return "Restarting level " + (level + 1) + "...";
-        }
         else if ("FREEZE".equalsIgnoreCase(command)) {
             player.setFreezeEnemies(!player.isFreezeEnemies());
             if (player.isFreezeEnemies()) {
+                stats.cheated = true;
                 playSound("/sound/nuclear_health.wav");
             }
             return "Freeze mode is now " + (player.isFreezeEnemies() ? "on" : "off");
@@ -591,6 +594,7 @@ public class GameScene extends Scene {
         else if ("CHEAT".equalsIgnoreCase(command)) {
             player.setGodMode(!player.isGodMode());
             if (player.isGodMode()) {
+                stats.cheated = true;
                 player.setAmmo(Player.MAX_AMMO);
                 player.setHealth(Player.MAX_HEALTH);
                 playSound("/sound/nuclear_health.wav");
@@ -598,11 +602,13 @@ public class GameScene extends Scene {
             return "Cheat mode is now " + (player.isGodMode() ? "on" : "off");
         }
         else if ("AMMO".equalsIgnoreCase(command)) {
+            stats.cheated = true;
             player.setAmmo(Math.min(Player.MAX_AMMO, player.getAmmo() + 20));
             playSound("/sound/getammo.wav");
             return "You got some ammo";
         }
         else if ("HEALTH".equalsIgnoreCase(command)) {
+            stats.cheated = true;
             player.setHealth(Math.min(Player.MAX_HEALTH, player.getHealth() + 20));
             playSound("/sound/getammo.wav");
             return "You got a med kit";
@@ -617,6 +623,7 @@ public class GameScene extends Scene {
             }
 
             if (newLevel >= 0 && newLevel < NUM_LEVELS) {
+                stats.cheated = true;
                 setLevel(newLevel);
                 return "Jump to level " + (newLevel + 1);
             }
@@ -634,6 +641,7 @@ public class GameScene extends Scene {
             }
 
             if (key > 0 && key < 4) {
+                stats.cheated = true;
                 playSound("/sound/unlock.wav");
                 player.addKey(key);
                 return "You got key " + key;
@@ -649,6 +657,8 @@ public class GameScene extends Scene {
 
     @Override
     public void onTick() {
+        crosshair.setVisible(showCrosshair && map.getPlayer().isAlive());
+        
         if (paused) {
             resetKeys();
             return;
@@ -660,7 +670,7 @@ public class GameScene extends Scene {
             if (nextActionTicksRemaining <= 0) {
                 
                 if (nextAction == ACTION_NEW_LEVEL) {
-                    newLevelAction();
+                    nextLevelAction();
                 }
                 else if (nextAction == ACTION_WIN) {
                     winAction();
@@ -780,6 +790,7 @@ public class GameScene extends Scene {
             return;
         }
         
+        stats.numShotsFired++;
         playSound("/sound/laser1.wav");
 
         if (!player.isGodMode()) {
@@ -796,13 +807,17 @@ public class GameScene extends Scene {
             return;
         }
         
+        boolean hitSomething = false;
         List<Entity> hitEnemies = map.getCollisions(Enemy.class, player.getX(), player.getY(), p.x, p.y);
         if (hitEnemies.size() > 0) {
             for (Entity entity : hitEnemies) {
                 if (entity instanceof Enemy) {
-                    ((Enemy)entity).hurt(6 + (int)(Math.random()*3)); //6..8
+                    hitSomething |= ((Enemy)entity).hurt(6 + (int)(Math.random()*3)); //6..8
                 }
             }
+        }
+        if (hitSomething) {
+            stats.numShotsFiredHit++;
         }
         else {
             // Miss - show the hit on the wall
@@ -810,15 +825,37 @@ public class GameScene extends Scene {
         }
     }
     
-    private void newLevelAction() {
+    private void copyLevelStats() {
+        stats.numSecretsFound += map.getPlayer().getSecrets();
+        stats.totalSecrets += map.getNumSecrets();
+        stats.numKills += map.getPlayer().getKills();
+        stats.totalEnemies += map.getNumEnemies();
+    }
+    
+    private void nextLevelAction() {
+        copyLevelStats();
         setLevel(level + 1);
     }
     
     private void winAction() {
+        String statsDescription = stats.getDescription(map, level + 1); 
+        copyLevelStats();
         hasWon = true;
         mousePressed = false;
         map.getPlayer().setAlive(false);
-        gameOverWinMessage.setVisible(true);
+        if (gameOverMessage != null) {
+            gameOverMessage.removeFromSuperview();
+        }
+        if (gameOverBackground == null) {
+            gameOverBackground = new View(0, 0, getWidth(), getHeight());
+            gameOverBackground.setBackgroundColor(new Color(0, 0, 0, 0.25f));
+            addSubview(gameOverBackground);
+        }
+        gameOverMessage = Label.makeMultilineLabel(messageFont, 
+            "YOU WIN. Click to play again.\n\n" + statsDescription, 0.5f);
+        gameOverMessage.setLocation(getWidth() / 2, getHeight() / 2);
+        gameOverMessage.setAnchor(0.5f, 0.5f);
+        addSubview(gameOverMessage);
     }
     
     private void tickPlayer() {
@@ -828,6 +865,7 @@ public class GameScene extends Scene {
             if (mousePressed) {
                 player.setHealth(Player.DEFAULT_HEALTH);
                 player.setAmmo(Player.DEFAULT_AMMO);
+                stats = new Stats();
                 setLevel(0);
             }
             return;
@@ -836,7 +874,16 @@ public class GameScene extends Scene {
             player.setZ(Math.max(player.getZ() - 0.008f, player.getRadius()));
             deathTicksRemaining--;
             if (deathTicksRemaining <= 0) {
-                gameOverLoseMessage.setVisible(true);
+                if (deathTicksRemaining == 0) {
+                    if (gameOverMessage != null) {
+                        gameOverMessage.removeFromSuperview();
+                    }
+                    gameOverMessage = new Label(messageFont, "YOU DIED.");
+                    gameOverMessage.setLocation(getWidth() / 2, getHeight() / 2);
+                    gameOverMessage.setAnchor(0.5f, 0.5f);
+                    addSubview(gameOverMessage);
+                    stats.numDeaths++;
+                }
                 if (mousePressed) {
                     player.setHealth(Player.DEFAULT_HEALTH);
                     player.setAmmo(Player.DEFAULT_AMMO);

@@ -3,6 +3,8 @@ package com.brackeen.scared.entity;
 import com.brackeen.app.App;
 import com.brackeen.scared.Map;
 import com.brackeen.scared.SoftTexture;
+import com.brackeen.scared.Stats;
+
 import java.awt.geom.Point2D;
 import java.util.List;
 
@@ -32,6 +34,7 @@ public class Enemy extends Entity {
 
     private final SoftTexture[] textures;
     private final Map map;
+    private final Stats stats;
     private int state;
     private int health;
     private final double p; //probability of changing states
@@ -42,10 +45,11 @@ public class Enemy extends Entity {
     private boolean playerVisibilityNeedsCalculation;
     private boolean isPlayerVisible;
     
-    public Enemy(Map map, SoftTexture[] textures, float x, float y, int type) {
+    public Enemy(Map map, Stats stats, SoftTexture[] textures, float x, float y, int type) {
         super(0.25f, x, y);
         this.textures = textures;
         this.map = map;
+        this.stats = stats;
         setTexture(textures[0]);
         setTextureScale(getTextureScale() / 2);
         setZ(-4f / DEFAULT_PIXELS_PER_TILE);
@@ -92,8 +96,11 @@ public class Enemy extends Entity {
         }
     }
 
-    public void hurt(int points) {
-        if (health > 0) {
+    public boolean hurt(int points) {
+        if (health <= 0) {
+            return false;
+        }
+        else {
             health -= points;
             boolean gotoHurtState = false;
             
@@ -113,6 +120,7 @@ public class Enemy extends Entity {
             if (gotoHurtState) {
                 setState(STATE_HURT);
             }
+            return true;
         }
     }
     
@@ -247,10 +255,10 @@ public class Enemy extends Entity {
                 }
                 else if (ticksRemaining <= 0) {
                     App.getApp().getAudio("/sound/laser0.wav", 1).play();
+                    stats.numEnemyShotsFired++;
 
                     // fire shot
                     if (isPlayerVisible(angleToPlayer)) {
-                        
                         Point2D.Float point = map.getWallCollision(getX(), getY(), (float)Math.toDegrees(aimAngle));
                         if (point != null) {
                             List<Entity> playerHit = map.getCollisions(Player.class, getX(), getY(), point.x, point.y);
@@ -265,8 +273,11 @@ public class Enemy extends Entity {
                                 else if (diffAngle < .25) { // about 15 degrees
                                     hitPoints = 3 + (int)Math.round(Math.random() * 5);
                                 }
-                                
-                                player.hurt(hitPoints);
+
+                                boolean actuallyHurt = player.hurt(hitPoints);
+                                if (actuallyHurt) {
+                                    stats.numEnemyShotsFiredHit++;
+                                }
                             }
                         }
                     }
