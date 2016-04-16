@@ -6,22 +6,28 @@ import com.brackeen.app.view.Button;
 import com.brackeen.app.view.Label;
 import com.brackeen.app.view.Scene;
 import com.brackeen.app.view.View;
+
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ConsoleScene extends Scene {
     
     private static final int CURSOR_BLINK_TICKS = 20;
     private static final int BORDER_SIZE = 10;
+    private static final int MAX_COMMAND_HISTORY = 200;
     private static final String PROMPT = "] ";
+
+    private static List<String> commandHistory = new ArrayList<>();
 
     private final GameScene gameScene;
     private Button backButton;
     private Button helpButton;
     private View textView;
-    private String currentLine = "";
+    private String newCommandLine = "";
+    private int commandHistoryIndex;
     private int ticks = 0;
     private boolean cursorOn = true;
     
@@ -32,6 +38,8 @@ public class ConsoleScene extends Scene {
     @Override
     public void onLoad() {
         App app = App.getApp();
+
+        commandHistoryIndex = commandHistory.size();
         
         final BitmapFont messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
 
@@ -80,7 +88,7 @@ public class ConsoleScene extends Scene {
             public void keyTyped(KeyEvent ke) {
                 char ch = ke.getKeyChar();
                 if (messageFont.canDisplay(ch)) {
-                    currentLine += ch;
+                    setCurrentLine(getCurrentLine() + ch);
                 }
                 setCursorOn(true);
             }
@@ -91,15 +99,35 @@ public class ConsoleScene extends Scene {
                     App.getApp().popScene();
                 }
                 else if (ke.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                    String currentLine = getCurrentLine();
                     if (currentLine.length() > 0) {
-                        currentLine = currentLine.substring(0, currentLine.length() - 1);
+                        setCurrentLine(currentLine.substring(0, currentLine.length() - 1));
+                        setCursorOn(true);
                     }
                 }
+                else if (ke.getKeyCode() == KeyEvent.VK_UP) {
+                    commandHistoryIndex = Math.max(0, commandHistoryIndex - 1);
+                    setCursorOn(true);
+                }
+                else if (ke.getKeyCode() == KeyEvent.VK_DOWN) {
+                    commandHistoryIndex = Math.min(commandHistory.size(), commandHistoryIndex + 1);
+                    setCursorOn(true);
+                }
                 else if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
+                    setCursorOn(true);
+                    String currentLine = getCurrentLine();
                     App.log(PROMPT + currentLine);
-                    String response = gameScene.doCommand(currentLine);
-                    App.log(response);
-                    currentLine = "";
+                    if (currentLine.length() > 0) {
+                        String response = gameScene.doCommand(currentLine);
+                        App.log(response);
+
+                        commandHistory.add(currentLine);
+                        if (commandHistory.size() > MAX_COMMAND_HISTORY) {
+                            commandHistory.remove(0);
+                        }
+                        commandHistoryIndex = commandHistory.size();
+                        newCommandLine = "";
+                    }
                 }
             }
 
@@ -122,6 +150,26 @@ public class ConsoleScene extends Scene {
         ticks = 0;
     }
     
+    private String getCurrentLine() {
+        String currentLine;
+        if (commandHistoryIndex < commandHistory.size()) {
+            currentLine = commandHistory.get(commandHistoryIndex);
+        }
+        else {
+            currentLine = newCommandLine;
+        }
+        return currentLine;
+    }
+    
+    private void setCurrentLine(String currentLine) {
+        if (commandHistoryIndex < commandHistory.size()) {
+            commandHistory.set(commandHistoryIndex, currentLine);
+        }
+        else {
+            newCommandLine = currentLine;
+        }
+    }
+    
     @Override
     public void onTick() {
         ticks++;
@@ -138,7 +186,7 @@ public class ConsoleScene extends Scene {
                 label.setText(log.get(log.size() - numLogLines + i));
             }
             else if (i == numLogLines) {
-                label.setText(PROMPT + currentLine + (cursorOn ? "_" : ""));
+                label.setText(PROMPT + getCurrentLine() + (cursorOn ? "_" : ""));
             }
             else {
                 label.setText("");
