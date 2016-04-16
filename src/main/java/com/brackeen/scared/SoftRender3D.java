@@ -25,9 +25,9 @@ Internally uses sin/cos tables and fixed-point math.
 */
 public class SoftRender3D extends View {
     
-    // Angle. Instead of 0..360, it is 0..4096.
+    // Angle. Instead of 0..360, it is 0..65536.
     
-    private static final int NUM_DEGREES = 0x1000;
+    private static final int NUM_DEGREES = 0x10000;
     private static final int NUM_DEGREES_MASK = NUM_DEGREES - 1;
     private static final int ANGLE_360 = NUM_DEGREES;
     private static final int ANGLE_270 = NUM_DEGREES * 3 / 4;
@@ -36,6 +36,9 @@ public class SoftRender3D extends View {
     private static final int ANGLE_0 = 0;
     
     private static final int DEPTH_SCALE = 48;
+
+    private static final int MIN_FOV = 30;
+    private static final int MAX_FOV = 120;
 
     private static int degreesToAngle(float degrees) {
         return Math.round(degrees * NUM_DEGREES / 360) & NUM_DEGREES_MASK;
@@ -61,7 +64,7 @@ public class SoftRender3D extends View {
     private static final int FRACTION_MASK = (1 << FRACTION_BITS) - 1;    
     
     private static int toFixedPoint(double n) {
-        return (int)Math.round(n * ONE);
+        return (int)Math.floor(n * ONE);
     }
     
     private static float toFloat(int f) {
@@ -139,6 +142,7 @@ public class SoftRender3D extends View {
     
     private float fov;
     private float focalDistance;
+    private boolean drawDepthShading = true;
     
     // Fixed point numbers start with 'f_'
     private int f_cameraX;
@@ -160,8 +164,6 @@ public class SoftRender3D extends View {
     @param height height in pixels
     */
     public SoftRender3D(HashMap<String, SoftTexture> textureCache, float width, float height) {
-        this.fov = 60;
-
         f_cosTable = new int[NUM_DEGREES];
         f_sinTable = new int[NUM_DEGREES];
         f_tanTable = new int[NUM_DEGREES];
@@ -210,11 +212,14 @@ public class SoftRender3D extends View {
         return fov;
     }
 
-    public void setFov(float fov) {
-        this.fov = fov;
-        onResize();
+    public boolean isDepthShadingEnabled() {
+        return drawDepthShading;
     }
-    
+
+    public void setDepthShadingEnabled(boolean drawDepthShading) {
+        this.drawDepthShading = drawDepthShading;
+    }
+
     /**
     Gets the view angle, in degrees, at location x within the view.
     */
@@ -227,6 +232,9 @@ public class SoftRender3D extends View {
 
     @Override
     public void onResize() {
+        fov = getWidth() * 45 / getHeight(); // 60 degrees for 640x480
+        fov = Math.max(MIN_FOV, fov);
+        fov = Math.min(MAX_FOV, fov);
         int w = ((int)getWidth()) / pixelScale;
         int h = ((int)getHeight()) / pixelScale;
         dstBuffer = null;
@@ -325,7 +333,7 @@ public class SoftRender3D extends View {
                 int wallHeight = toIntCeil(div(f_focalDistance, ray.f_dist));
                 wallHeight = (wallHeight + 1) & ~1; // Make it even, rounding up
                 if (wallHeight > 0) {
-                    int depth = toIntFloor(ray.f_dist * DEPTH_SCALE);
+                    int depth = drawDepthShading ? toIntFloor(ray.f_dist * DEPTH_SCALE) : 0;
                     int bottom = viewHeight / 2 + toIntFloor(wallHeight * f_cameraZ) - 1;
                     int top = bottom - wallHeight + 1;
                     ray.floorDrawY = bottom;
@@ -402,7 +410,7 @@ public class SoftRender3D extends View {
             ty += startX * tyInc;
             
             int f_dist = (int)(((long)f_cameraZ * f_focalDistance / row) >> FRACTION_BITS);
-            int depth = toIntFloor(f_dist * DEPTH_SCALE);
+            int depth = drawDepthShading ? toIntFloor(f_dist * DEPTH_SCALE) : 0;
             
             for (int x = startX; x < endX; x++) {
                 if (currentY > rays[x].floorDrawY) {
@@ -475,11 +483,11 @@ public class SoftRender3D extends View {
                             cameraZ * (focalDistance * (1 - h) / dist));
 
                     if (renderWidth > viewWidth * 4) {
-                        // Too big; too close to canera. Don't draw it.
+                        // Too big; too close to camera. Don't draw it.
                         continue;
                     }
 
-                    int depth = (int)(dist * DEPTH_SCALE);
+                    int depth = drawDepthShading ? (int)(dist * DEPTH_SCALE) : 0;
                     int f_dist = toFixedPoint(dist);
                     int f_renderWidth = toFixedPoint(renderWidth);
                     int renderX2 = Math.min(viewWidth, renderX + renderWidth);
@@ -690,7 +698,6 @@ public class SoftRender3D extends View {
                 // Skip it
             }
             else if (tile.type == Tile.TYPE_WALL || tile.type == Tile.TYPE_EXIT || tile.type == Tile.TYPE_GENERATOR) {
-
                 if (checkingY) {
                     sliver = fracPart(f_rayY);
                 }
@@ -768,7 +775,6 @@ public class SoftRender3D extends View {
                 }
 
                 if (visible) {
-                    
                     if (checkingY) {
                         sliver = fracPart(f_rayY + f_extraY);
                     }
