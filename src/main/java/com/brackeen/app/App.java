@@ -2,6 +2,7 @@ package com.brackeen.app;
 
 import com.brackeen.app.view.Scene;
 import com.brackeen.app.view.View;
+
 import java.applet.Applet;
 import java.awt.Canvas;
 import java.awt.Color;
@@ -18,13 +19,16 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+
 import javax.imageio.ImageIO;
 import javax.swing.Timer;
 
@@ -42,9 +46,21 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         return APP.get();
     }
     
-    private static int MAX_LOG_LINES = 1000;
-    
+    private static final int MAX_LOG_LINES = 1000;
+
     public static void log(String statement) {
+        log(statement, false);
+    }
+
+    public static void logError(String statement) {
+        log(statement, true);
+    }
+    
+    private static void log(String statement, boolean toSystemOut) {
+        if (toSystemOut) {
+            System.out.println(statement);
+        }
+        
         List<String> log = App.getApp().getLog();
         
         // Split on newlines
@@ -223,6 +239,41 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     }
     
     // Resources
+
+    private static URL getResourceFromLocalSource(String name) {
+        // For developers running from an IDE. Tested in Android Studio
+        try {
+            File file = new File(System.getProperty("user.dir") + "/src/main/resources/" + name);
+            return file.toURI().toURL();
+        }
+        catch (IOException ex) {
+            return null;
+        }
+    }
+    
+    public static URL getResource(String name) {
+        URL url = App.class.getResource(name);
+        if (url == null) {
+            url = getResourceFromLocalSource(name);
+        }
+        return url;
+    }
+
+    public static InputStream getResourceAsStream(String name) {
+        InputStream is = App.class.getResourceAsStream(name);
+        if (is == null) {
+            URL url = getResourceFromLocalSource(name);
+            if (url != null) {
+                try {
+                    return url.openStream();
+                }
+                catch (IOException ex) {
+                    return null;
+                }
+            }
+        }
+        return is;
+    }
     
     /**
     Get an audio file. The first time the audio is loaded, the maxSimultaneousStreams param
@@ -233,7 +284,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         BufferedAudio audio = loadedAudio.get(audioName);
         if (audio == null && audioName != null) {
             try {
-                URL url = getClass().getResource(audioName);
+                URL url = getResource(audioName);
                 if (url != null) {
                     audio = BufferedAudio.read(url, maxSimultaneousStreams);
                     if (audio != null) {
@@ -247,7 +298,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         }
         
         if (audio == null) {
-            log("Could not load audio: " + audioName);
+            logError("Could not load audio: " + audioName);
             audio = BufferedAudio.DUMMY_AUDIO;
         }
         return audio;
@@ -272,7 +323,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         }
         if (image == null && imageName != null) {
             try {
-                URL url = getClass().getResource(imageName);
+                URL url = getResource(imageName);
                 if (url != null) {
                     image = ImageIO.read(url);
                     if (image != null) {
@@ -286,7 +337,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         }
         
         if (image == null) {
-            log("Could not load image: " + imageName);
+            logError("Could not load image: " + imageName);
         }
         return image;
     }
@@ -384,7 +435,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         }
     }
     
-    private void dispatchExitEvents(View view, MouseEvent e) {
+    private void dispatchExitEvents(MouseEvent e) {
         for (View oldView : prevViewsWithTouchInside) {
             MouseListener l = oldView.getMouseListener();
             if (l != null && !currViewsWithTouchInside.contains(oldView)) {
@@ -399,7 +450,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         currViewsWithTouchInside.clear();
     }
     
-    // Propogate mouse events until it is consumed.
+    // Propagate mouse events until it is consumed.
     
     public void mouseClicked(MouseEvent e) {
         View view = getMousePick(e);
@@ -469,7 +520,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             view = view.getSuperview();
         }
         
-        dispatchExitEvents(view, e);
+        dispatchExitEvents(e);
     }
     
     public void mouseEntered(MouseEvent e) {

@@ -64,7 +64,7 @@ public class Map {
         }
         addEntity(player);
         
-        InputStream stream = getClass().getResourceAsStream(mapName);
+        InputStream stream = App.getResourceAsStream(mapName);
         if (stream == null) {
             throw new IOException("Not found: " + mapName);
         }
@@ -185,13 +185,13 @@ public class Map {
                             break;
                         default:
                             tile.type = Tile.TYPE_NOTHING;
-                            App.log("Invalid char: " + line.charAt(x));
+                            App.logError("Map " + mapName + " contains invalid char: " + line.charAt(x));
                             break;
                     }
                 }
             }
 
-            line = r.readLine();
+            r.readLine();
 
             // Read textures
             for (int y = 0; y < height; y++) {
