@@ -106,6 +106,7 @@ public class GameScene extends Scene {
     private Label enemiesLabel;
     private Label secretsLabel;
     private Label levelLabel;
+    private Label fpsLabel;
     private int ticksUntilHideSpecialStats;
     private ImageView gunView;
     private ImageView gunBlastView;
@@ -266,6 +267,13 @@ public class GameScene extends Scene {
         levelLabel.setAnchor(0, 1);
         specialStats.addSubview(levelLabel);
         addSubview(specialStats);
+        
+        // FPS
+        fpsLabel = new Label(messageFont, "0 fps");
+        fpsLabel.setOpacity(hudOpacity);
+        fpsLabel.setAnchor(1, 0);
+        fpsLabel.setVisible(false);
+        addSubview(fpsLabel);
 
         // Focus message
         focusLostLabel = new Label(messageFont, "Click to continue");
@@ -313,6 +321,9 @@ public class GameScene extends Scene {
                 }
                 else if (ke.getKeyCode() == KeyEvent.VK_X) {
                     crosshair.setVisible(!crosshair.isVisible());
+                }
+                else if (ke.getKeyCode() == KeyEvent.VK_R) {
+                    fpsLabel.setVisible(!fpsLabel.isVisible());
                 }
                 else if (ke.getKeyCode() == KeyEvent.VK_TAB || ke.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
                     specialStats.setVisible(true);
@@ -438,6 +449,9 @@ public class GameScene extends Scene {
         enemiesLabel.setLocation(UI_SPACING * 2, secretsLabel.getY() - UI_SPACING - secretsLabel.getHeight());
         levelLabel.setLocation(UI_SPACING * 2, enemiesLabel.getY() - UI_SPACING - enemiesLabel.getHeight());
 
+        // FPS
+        fpsLabel.setLocation(getWidth() - UI_SPACING, UI_SPACING);
+        
         // UI Labels
         focusLostLabel.setLocation(getWidth() / 2, getHeight() / 2);
         gameOverWinMessage.setLocation(getWidth() / 2, focusLostLabel.getY() + focusLostLabel.getHeight());
@@ -683,6 +697,8 @@ public class GameScene extends Scene {
         for (int i = 0; i < Key.NUM_KEYS; i++) {
             keys[i].setVisible(player.hasKey(i + 1));
         }
+        fpsLabel.setText(String.format("%.2f fps", App.getApp().getActualFrameRate()));
+        fpsLabel.sizeToFit();
         healthLabel.setText(Integer.toString(player.getHealth()));
         healthLabel.sizeToFit();
         ammoLabel.setText(Integer.toString(player.getAmmo()));

@@ -81,7 +81,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     }
 
     private final float frameRate = 60;
-    private final Timer timer = new Timer((int)(1000 / frameRate), new ActionListener() {
+    private final Timer timer = new Timer(1, new ActionListener() {
 
         // Using Swing's Timer because it executes on the EDT, so there will be no threading issues.
         public void actionPerformed(ActionEvent ae) {
@@ -91,6 +91,10 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     });
     private long lastTime = 0;
     private double remainingTime = 0;
+    private long lastTickTime = 0;
+    private float actualFrameRate = 0;
+    private long actualFrameRateLastTime = 0;
+    private long actualFrameRateTickCount = 0;
     
     private final List<String> log = new ArrayList<>();
     
@@ -122,6 +126,9 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     public synchronized void start() {
         lastTime = System.nanoTime();
         remainingTime = 0;
+        actualFrameRate = 0;
+        actualFrameRateLastTime = 0;
+        actualFrameRateTickCount = 0;
         timer.start();
     }
     
@@ -152,6 +159,14 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     }
     
     private synchronized void tick() {
+        long tickTime = System.nanoTime();
+        if (tickTime - lastTickTime < 1000000000 / frameRate - 750000) {
+            return;
+        }
+        else {
+            lastTickTime = tickTime;
+        }
+        
         boolean needsResize = false;
         if (App.getApp() == null) {
             // For appletviewer
@@ -192,6 +207,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             }
         }
         if (bufferStrategy != null) {
+            // Resize
             if (needsResize) {
                 for (Scene scene : sceneStack) {
                     scene.setSize(getWidth(), getHeight());
@@ -201,22 +217,29 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             // Tick
             View scene = null;
             double elapsedTime = (System.nanoTime() - lastTime) / 1000000000.0 + remainingTime;
-            int ticks = Math.max(1, (int)(frameRate * elapsedTime));
-            if (ticks > 4) {
-                ticks = 4;
-                remainingTime = 0;
+            int ticks = (int)(frameRate * elapsedTime);
+            if (ticks == 0) {
+                if (!sceneStack.isEmpty()) {
+                    scene = sceneStack.peek();
+                }
             }
             else {
-                remainingTime = Math.max(0, elapsedTime - ticks / frameRate);
-            }
-            for (int i = 0; i < ticks; i++) {
-                if (sceneStack.size() == 0) {
-                    pushScene(createFirstScene());
+                if (ticks > 4) {
+                    ticks = 4;
+                    remainingTime = 0;
+                } 
+                else {
+                    remainingTime = Math.max(0, elapsedTime - ticks / frameRate);
                 }
-                scene = sceneStack.peek();
-                scene.tick();
+                for (int i = 0; i < ticks; i++) {
+                    if (sceneStack.size() == 0) {
+                        pushScene(createFirstScene());
+                    }
+                    scene = sceneStack.peek();
+                    scene.tick();
+                }
+                lastTime = System.nanoTime();
             }
-            lastTime = System.nanoTime();
             
             // Set cursor
             Cursor cursor = Cursor.getDefaultCursor();
@@ -244,7 +267,25 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             }
             g.dispose();
             bufferStrategy.show();
+            
+            // Frame rate
+            actualFrameRateTickCount++;
+            if (lastTime - actualFrameRateLastTime >= 500000000) {
+                float duration = (lastTime - actualFrameRateLastTime) / 1000000000.0f;
+                if (actualFrameRateLastTime == 0) {
+                    actualFrameRate = 0;
+                }
+                else {
+                    actualFrameRate = actualFrameRateTickCount / duration;
+                }
+                actualFrameRateTickCount = 0;
+                actualFrameRateLastTime = lastTime;
+            }
         }
+    }
+    
+    public float getActualFrameRate() {
+        return actualFrameRate;
     }
     
     // Resources
