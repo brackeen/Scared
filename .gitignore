@@ -1,2 +1,7 @@
-.DS_Store
-target/
+.gradle
+build/
+
+# Auto-generated IDEA/Android Studio files
+.idea
+*.iml
+local.properties

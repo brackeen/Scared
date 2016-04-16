@@ -1,0 +1,19 @@
+apply plugin: 'java'
+
+group = 'com.brackeen'
+version = '1.8.1'
+
+description = 'Scared'
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.brackeen.scared.Main'
+    }
+}
