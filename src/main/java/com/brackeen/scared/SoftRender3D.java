@@ -174,6 +174,7 @@ public class SoftRender3D extends View {
         }
         
         setSize(width, height);
+        onResize();
         
         for (int i = 0; i < doorTextures.length; i++) {
             doorTextures[i] = textureCache.get("door0" + i + ".png");
@@ -202,7 +203,7 @@ public class SoftRender3D extends View {
 
     public void setPixelScale(int pixelScale) {
         this.pixelScale = pixelScale;
-        updateSize();
+        onResize();
     }
 
     public float getFov() {
@@ -211,7 +212,7 @@ public class SoftRender3D extends View {
 
     public void setFov(float fov) {
         this.fov = fov;
-        updateSize();
+        onResize();
     }
     
     /**
@@ -223,14 +224,9 @@ public class SoftRender3D extends View {
         x = Math.min(x, rayAngleTable.length - 1);
         return angleToDegrees((rayAngleTable[x] - cameraAngle) & NUM_DEGREES_MASK);
     }
-    
+
     @Override
-    public void setSize(float width, float height) {
-        super.setSize(width, height);
-        updateSize();
-    }
-    
-    private void updateSize() {
+    public void onResize() {
         int w = ((int)getWidth()) / pixelScale;
         int h = ((int)getHeight()) / pixelScale;
         dstBuffer = null;

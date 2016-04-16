@@ -147,15 +147,21 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         prevViewsWithTouchInside.clear();
         currViewsWithTouchInside.clear();
         log.clear();
-        bufferStrategy = null;
         canvas = null;
         removeAll();
     }
     
     private synchronized void tick() {
+        boolean needsResize = false;
         if (App.getApp() == null) {
             // For appletviewer
             APP.set(this);
+        }
+        if (bufferStrategy != null && canvas != null && 
+                (canvas.getWidth() != getWidth() || canvas.getHeight() != getHeight())) {
+            bufferStrategy.dispose();
+            bufferStrategy = null;
+            needsResize = true;
         }
         if (bufferStrategy == null) {
             removeAll();
@@ -186,10 +192,14 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             }
         }
         if (bufferStrategy != null) {
-            
-            View scene = null;
+            if (needsResize) {
+                for (Scene scene : sceneStack) {
+                    scene.setSize(getWidth(), getHeight());
+                }
+            }
             
             // Tick
+            View scene = null;
             double elapsedTime = (System.nanoTime() - lastTime) / 1000000000.0 + remainingTime;
             int ticks = Math.max(1, (int)(frameRate * elapsedTime));
             if (ticks > 4) {

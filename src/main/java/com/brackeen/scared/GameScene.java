@@ -56,7 +56,10 @@ public class GameScene extends Scene {
     private static final int ACTION_NONE = 0;
     private static final int ACTION_NEW_LEVEL = 1;
     private static final int ACTION_WIN = 2;
-        
+    
+    private static final int WARNING_BORDER_SIZE = 6;
+    private static final int UI_SPACING = 4;
+
     private final HashMap<String, SoftTexture> textureCache = new HashMap<>();
     
     private boolean keyLeft = false;
@@ -88,13 +91,18 @@ public class GameScene extends Scene {
     // HUD
     private final MessageQueue messageQueue = new MessageQueue(4);
     private final Label[] messageLabels = new Label[4];
+    private BitmapFont messageFont;
+    private BitmapFont scoreFont1;
+    private BitmapFont scoreFont2;
     private Label focusLostLabel;
     private boolean paused;
     private final ImageView[] keys = new ImageView[Key.NUM_KEYS];
     private View normalStats;
     private View specialStats;
     private Label healthLabel;
+    private Label healthHeaderLabel;
     private Label ammoLabel;
+    private Label ammoHeaderLabel;
     private Label enemiesLabel;
     private Label secretsLabel;
     private Label levelLabel;
@@ -112,9 +120,9 @@ public class GameScene extends Scene {
     public void onLoad() {
         App app = App.getApp();
         
-        BitmapFont messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
-        BitmapFont scoreFont1 = new BitmapFont(app.getImage("/ui/score_font1.png"), 19, '0');
-        BitmapFont scoreFont2 = new BitmapFont(app.getImage("/ui/score_font2.png"), 19, '0');
+        messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
+        scoreFont1 = new BitmapFont(app.getImage("/ui/score_font1.png"), 19, '0');
+        scoreFont2 = new BitmapFont(app.getImage("/ui/score_font2.png"), 19, '0');
         scoreFont1.setTracking(2);
         scoreFont2.setTracking(2);
         
@@ -182,7 +190,7 @@ public class GameScene extends Scene {
         }
                 
         renderer = new SoftRender3D(textureCache, getWidth(), getHeight());
-        //renderer.setPixelScale(4);
+        //renderer.setPixelScale(2);
         addSubview(renderer);
         
         // Crosshair
@@ -200,70 +208,48 @@ public class GameScene extends Scene {
         addSubview(gunView);
         
         // Red warning splash
-        int borderSize = 6;
         warningSplash = new View();
         warningSplash.setVisible(false);
-        View view = new View(0, 0, getWidth(), borderSize);
-        view.setBackgroundColor(Color.RED);
-        warningSplash.addSubview(view);
-        view = new View(0, borderSize, borderSize, getHeight() - borderSize*2);
-        view.setBackgroundColor(Color.RED);
-        warningSplash.addSubview(view);
-        view = new View(getWidth() - borderSize, borderSize, borderSize, getHeight() - borderSize*2);
-        view.setBackgroundColor(Color.RED);
-        warningSplash.addSubview(view);
-        view = new View(0, getHeight() - borderSize, getWidth(), borderSize);
-        view.setBackgroundColor(Color.RED);
-        warningSplash.addSubview(view);
         addSubview(warningSplash);
         
         float hudOpacity = 0.5f;
         
         // Message queue
-        final int spacing = 4;
-        float x = spacing;
-        float y = spacing;
+        float messageX = UI_SPACING;
+        float messageY = UI_SPACING;
         for (int i = 0; i < messageQueue.getMaxSize(); i++) {
             messageLabels[i] = new Label(messageFont, "");
-            messageLabels[i].setLocation(x, y);
+            messageLabels[i].setLocation(messageX, messageY);
             messageLabels[i].setOpacity(hudOpacity);
             addSubview(messageLabels[i]);
-            y += messageLabels[i].getHeight();
+            messageY += messageLabels[i].getHeight();
         }
         
         // Keys
-        x = getWidth() - spacing;
-        y = getHeight() - spacing;
         for (int i = 0; i < Key.NUM_KEYS; i++) {
             keys[i] = new ImageView(App.getApp().getImage("/sprites/key0" + (i+1) + ".png"));
             keys[i].setAnchor(1, 1);
-            keys[i].setLocation(x, y);
             keys[i].setOpacity(hudOpacity);
             keys[i].setVisible(false);
             addSubview(keys[i]);
-            x -= keys[i].getWidth() - spacing;
         }
         
         // Health/ammo
         normalStats = new View();
         normalStats.setOpacity(hudOpacity);
         healthLabel = new Label(scoreFont1, Integer.toString(Player.DEFAULT_HEALTH));
-        healthLabel.setLocation(spacing*4 + scoreFont1.getStringWidth("000")/2, getHeight() - spacing*2);
         healthLabel.setAnchor(0.5f, 1);
         normalStats.addSubview(healthLabel);
-        Label label = new Label(messageFont, "HEALTH");
-        label.setLocation(healthLabel.getX(), healthLabel.getY() - healthLabel.getHeight() - spacing);
-        label.setAnchor(0.5f, 1);
-        normalStats.addSubview(label);
+        healthHeaderLabel = new Label(messageFont, "HEALTH");
+        healthHeaderLabel.setAnchor(0.5f, 1);
+        normalStats.addSubview(healthHeaderLabel);
         
         ammoLabel = new Label(scoreFont1, Integer.toString(Player.DEFAULT_AMMO));
-        ammoLabel.setLocation(healthLabel.getX() + spacing*4 + scoreFont1.getStringWidth("000"), getHeight() - spacing*2);
         ammoLabel.setAnchor(0.5f, 1);
         normalStats.addSubview(ammoLabel);
-        label = new Label(messageFont, "AMMO");
-        label.setLocation(ammoLabel.getX(), ammoLabel.getY() - ammoLabel.getHeight() - spacing);
-        label.setAnchor(0.5f, 1);
-        normalStats.addSubview(label);
+        ammoHeaderLabel = new Label(messageFont, "AMMO");
+        ammoHeaderLabel.setAnchor(0.5f, 1);
+        normalStats.addSubview(ammoHeaderLabel);
         addSubview(normalStats);
         
         // Secrets/enemies
@@ -272,36 +258,32 @@ public class GameScene extends Scene {
         specialStats.setVisible(false);
         secretsLabel = new Label(messageFont, "Secrets: 0/0");
         secretsLabel.setAnchor(0, 1);
-        secretsLabel.setLocation(spacing * 2, getHeight() - spacing * 2);
         specialStats.addSubview(secretsLabel);
         enemiesLabel = new Label(messageFont, "Enemies: 0/0");
         enemiesLabel.setAnchor(0, 1);
-        enemiesLabel.setLocation(spacing * 2, secretsLabel.getY() - spacing - secretsLabel.getHeight());
         specialStats.addSubview(enemiesLabel);
         levelLabel = new Label(messageFont, "Level 1");
         levelLabel.setAnchor(0, 1);
-        levelLabel.setLocation(spacing * 2, enemiesLabel.getY() - spacing - enemiesLabel.getHeight());
         specialStats.addSubview(levelLabel);
         addSubview(specialStats);
 
         // Focus message
         focusLostLabel = new Label(messageFont, "Click to continue");
         focusLostLabel.setAnchor(0.5f, 0.5f);
-        focusLostLabel.setLocation(getWidth() / 2, getHeight() / 2);
         focusLostLabel.setVisible(false);
         addSubview(focusLostLabel);
         
         // Win/lose messages
         gameOverWinMessage = new Label(messageFont, "YOU WIN. Click to play again.");
         gameOverWinMessage.setAnchor(0.5f, 0.5f);
-        gameOverWinMessage.setLocation(getWidth() / 2, focusLostLabel.getY() + focusLostLabel.getHeight());
         gameOverWinMessage.setVisible(false);
         addSubview(gameOverWinMessage);
         gameOverLoseMessage = new Label(messageFont, "Click to try again");
         gameOverLoseMessage.setAnchor(0.5f, 0.5f);
-        gameOverLoseMessage.setLocation(getWidth() / 2, focusLostLabel.getY() + focusLostLabel.getHeight());
         gameOverLoseMessage.setVisible(false);
         addSubview(gameOverLoseMessage);
+        
+        onResize();
         
         // Hide the cursor
         try {
@@ -416,6 +398,50 @@ public class GameScene extends Scene {
         });
         
         setLevel(0);
+    }
+
+    @Override
+    public void onResize() {
+        renderer.setSize(getWidth(), getHeight());
+        
+        // Warning splash
+        warningSplash.removeAllSubviews();
+        View view = new View(0, 0, getWidth(), WARNING_BORDER_SIZE);
+        view.setBackgroundColor(Color.RED);
+        warningSplash.addSubview(view);
+        view = new View(0, WARNING_BORDER_SIZE, WARNING_BORDER_SIZE, getHeight() - WARNING_BORDER_SIZE*2);
+        view.setBackgroundColor(Color.RED);
+        warningSplash.addSubview(view);
+        view = new View(getWidth() - WARNING_BORDER_SIZE, WARNING_BORDER_SIZE, WARNING_BORDER_SIZE, getHeight() - WARNING_BORDER_SIZE*2);
+        view.setBackgroundColor(Color.RED);
+        warningSplash.addSubview(view);
+        view = new View(0, getHeight() - WARNING_BORDER_SIZE, getWidth(), WARNING_BORDER_SIZE);
+        view.setBackgroundColor(Color.RED);
+        warningSplash.addSubview(view);
+        
+        // Keys
+        float keyX = getWidth() - UI_SPACING;
+        float keyY = getHeight() - UI_SPACING;
+        for (int i = 0; i < Key.NUM_KEYS; i++) {
+            keys[i].setLocation(keyX,  keyY);
+            keyX -= keys[i].getWidth() - UI_SPACING;
+        }
+
+        // Health/ammo
+        healthLabel.setLocation(UI_SPACING*4 + scoreFont1.getStringWidth("000")/2, getHeight() - UI_SPACING*2);
+        healthHeaderLabel.setLocation(healthLabel.getX(), healthLabel.getY() - healthLabel.getHeight() - UI_SPACING);
+        ammoLabel.setLocation(healthLabel.getX() + UI_SPACING*4 + scoreFont1.getStringWidth("000"), getHeight() - UI_SPACING*2);
+        ammoHeaderLabel.setLocation(ammoLabel.getX(), ammoLabel.getY() - ammoLabel.getHeight() - UI_SPACING);
+        
+        // Secrets/level
+        secretsLabel.setLocation(UI_SPACING * 2, getHeight() - UI_SPACING * 2);
+        enemiesLabel.setLocation(UI_SPACING * 2, secretsLabel.getY() - UI_SPACING - secretsLabel.getHeight());
+        levelLabel.setLocation(UI_SPACING * 2, enemiesLabel.getY() - UI_SPACING - enemiesLabel.getHeight());
+
+        // UI Labels
+        focusLostLabel.setLocation(getWidth() / 2, getHeight() / 2);
+        gameOverWinMessage.setLocation(getWidth() / 2, focusLostLabel.getY() + focusLostLabel.getHeight());
+        gameOverLoseMessage.setLocation(getWidth() / 2, focusLostLabel.getY() + focusLostLabel.getHeight());
     }
     
     private SoftTexture getTexture(String name, boolean cache) {
@@ -700,7 +726,7 @@ public class GameScene extends Scene {
                 gunBlastView.setVisible(false);
             }
             
-            float stepSize = 10;
+            float stepSize = Math.round(getWidth() / 64);
             float dx = x - gunView.getX();
             if (Math.abs(dx) > stepSize) {
                 x = gunView.getX() + Math.signum(dx) * stepSize;

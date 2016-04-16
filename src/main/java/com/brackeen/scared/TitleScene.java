@@ -10,13 +10,17 @@ import java.awt.event.KeyListener;
 
 public class TitleScene extends Scene {
     
+    private ImageView titleView;
+    private Button startButton;
+    private Button helpButton;
+
     @Override
     public void onLoad() {
         App app = App.getApp();
-        
+
         App.log("Scared Console");
         App.log("Type \"HELP\" for commands");
-        
+
         // Preload audio.
         // Number of loaded audio buffers must be 32 or less, due to a Java Sound limitation.
         app.getAudio("/sound/bigfan.wav", 1);
@@ -34,18 +38,16 @@ public class TitleScene extends Scene {
         app.getAudio("/sound/startlevel.wav", 1);
         app.getAudio("/sound/unlock.wav", 1);
         app.getAudio("/sound/wallmove.wav", 1);
-        
+
         setBackgroundColor(new Color(12, 12, 12));
-        
-        ImageView title = new ImageView(app.getImage("/ui/splash.png"));
-        title.setAnchor(0.5f, 0);
-        title.setLocation(getWidth() / 2, 0);
-        addSubview(title);
-        
-        Button startButton = new Button(app.getImage("/ui/start_button_normal.png"));
+
+        titleView = new ImageView(app.getImage("/ui/splash.png"));
+        titleView.setAnchor(0.5f, 0);
+        addSubview(titleView);
+
+        startButton = new Button(app.getImage("/ui/start_button_normal.png"));
         startButton.setHoverImage(app.getImage("/ui/start_button_hover.png"));
         startButton.setPressedImage(app.getImage("/ui/start_button_pressed.png"));
-        startButton.setLocation(getWidth() / 2, 280);
         startButton.setAnchor(0.5f, 0.5f);
         startButton.setButtonListener(new Button.Listener() {
 
@@ -54,11 +56,10 @@ public class TitleScene extends Scene {
             }
         });
         addSubview(startButton);
-        
-        Button helpButton = new Button(app.getImage("/ui/help_button_normal.png"));
+
+        helpButton = new Button(app.getImage("/ui/help_button_normal.png"));
         helpButton.setHoverImage(app.getImage("/ui/help_button_hover.png"));
         helpButton.setPressedImage(app.getImage("/ui/help_button_pressed.png"));
-        helpButton.setLocation(getWidth() / 2, 350);
         helpButton.setAnchor(0.5f, 0.5f);
         helpButton.setButtonListener(new Button.Listener() {
 
@@ -67,6 +68,8 @@ public class TitleScene extends Scene {
             }
         });
         addSubview(helpButton);
+        
+        onResize();
 
         setKeyListener(new KeyListener() {
 
@@ -87,5 +90,12 @@ public class TitleScene extends Scene {
                 // Do nothing
             }
         });
+    }
+
+    @Override
+    public void onResize() {
+        titleView.setLocation(getWidth() / 2, 0);
+        startButton.setLocation(getWidth() / 2, 280);
+        helpButton.setLocation(getWidth() / 2, 350);
     }
 }

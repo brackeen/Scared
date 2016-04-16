@@ -2,12 +2,14 @@ package com.brackeen.scared;
 
 import com.brackeen.app.App;
 import com.brackeen.app.view.Scene;
+
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -43,11 +45,11 @@ public class Main extends App {
                 main.init();
                 main.start();
 
-                // Center applet on resize
+                // Resize applet on frame resize
                 contentPane.addComponentListener(new ComponentAdapter() {
                     @Override
                     public void componentResized(ComponentEvent e) {
-                        main.setLocation((contentPane.getWidth() - main.getWidth()) / 2, (contentPane.getHeight() - main.getHeight()) / 2);
+                        main.setBounds(contentPane.getBounds());
                     }
                 });
             }

@@ -32,6 +32,7 @@ public class View {
     private float opacity = 1;
     private boolean visible = true;
     private boolean enabled = true;
+    private boolean loaded = false;
     
     private MouseListener mouseListener;
     private MouseMotionListener mouseMotionListener;
@@ -166,8 +167,13 @@ public class View {
     }
 
     public void setWidth(float width) {
-        this.width = width;
-        localTransformDirty = true;
+        if (this.width != width) {
+            this.width = width;
+            localTransformDirty = true;
+            if (loaded) {
+                onResize();
+            }
+        }
     }
 
     public float getHeight() {
@@ -175,13 +181,24 @@ public class View {
     }
 
     public void setHeight(float height) {
-        this.height = height;
-        localTransformDirty = true;
+        if (this.height != height) {
+            this.height = height;
+            localTransformDirty = true;
+            if (loaded) {
+                onResize();
+            }
+        }
     }
 
     public void setSize(float width, float height) {
-        setWidth(width);
-        setHeight(height);
+        if (this.width != width || this.height != height) {
+            this.width = width;
+            this.height = height;
+            localTransformDirty = true;
+            if (loaded) {
+                onResize();
+            }
+        }
     }
     
     /**
@@ -255,7 +272,7 @@ public class View {
     }
         
     public void removeAllSubviews() {
-        for (View subview : subviews) {
+        for (View subview : new ArrayList<>(subviews)) {
             subview.removeFromSuperview();
         }
         subviews.clear();
@@ -272,6 +289,7 @@ public class View {
     
     public final void load() {
         onLoad();
+        loaded = true;
         for (View subview : subviews) {
             subview.load();
         }
@@ -282,6 +300,7 @@ public class View {
     }
     
     public final void unload() {
+        loaded = false;
         onUnload();
         for (View subview : subviews) {
             subview.unload();
@@ -290,6 +309,11 @@ public class View {
     
     public void onUnload() {
         
+    }
+    
+    // Only invoked if the View has been loaded (after onLoad(), before onUnload())
+    public void onResize() {
+
     }
     
     public final void tick() {

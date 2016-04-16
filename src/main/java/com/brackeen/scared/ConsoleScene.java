@@ -14,10 +14,12 @@ import java.util.List;
 public class ConsoleScene extends Scene {
     
     private static final int CURSOR_BLINK_TICKS = 20;
+    private static final int BORDER_SIZE = 10;
     private static final String PROMPT = "] ";
 
     private final GameScene gameScene;
-    
+    private Button backButton;
+    private Button helpButton;
     private View textView;
     private String currentLine = "";
     private int ticks = 0;
@@ -35,12 +37,9 @@ public class ConsoleScene extends Scene {
 
         setBackgroundColor(new Color(12, 12, 12));
         
-        int borderSize = 10;
-        
-        Button backButton = new Button(app.getImage("/ui/back_button_normal.png"));
+        backButton = new Button(app.getImage("/ui/back_button_normal.png"));
         backButton.setHoverImage(app.getImage("/ui/back_button_hover.png"));
         backButton.setPressedImage(app.getImage("/ui/back_button_pressed.png"));
-        backButton.setLocation(getWidth() / 2 - borderSize/2, getHeight() - borderSize);
         backButton.setAnchor(1, 1);
         backButton.setButtonListener(new Button.Listener() {
 
@@ -50,10 +49,9 @@ public class ConsoleScene extends Scene {
         });
         addSubview(backButton);
         
-        Button helpButton = new Button(app.getImage("/ui/help_button_normal.png"));
+        helpButton = new Button(app.getImage("/ui/help_button_normal.png"));
         helpButton.setHoverImage(app.getImage("/ui/help_button_hover.png"));
         helpButton.setPressedImage(app.getImage("/ui/help_button_pressed.png"));
-        helpButton.setLocation(getWidth() / 2 + borderSize/2, getHeight() - borderSize);
         helpButton.setAnchor(0, 1);
         helpButton.setButtonListener(new Button.Listener() {
 
@@ -64,9 +62,10 @@ public class ConsoleScene extends Scene {
         addSubview(helpButton);
         
         textView = new View();
-        textView.setLocation(borderSize, borderSize);
-        textView.setSize(getWidth() - borderSize * 2, getHeight() - borderSize * 3 - helpButton.getHeight());
+        textView.setLocation(BORDER_SIZE, BORDER_SIZE);
         addSubview(textView);
+
+        onResize();
         
         int maxLines = (int)textView.getHeight() / messageFont.getHeight();
         for (int i = 0; i < maxLines; i++) {
@@ -109,6 +108,13 @@ public class ConsoleScene extends Scene {
                 
             }
         });
+    }
+    
+    @Override
+    public void onResize() {
+        backButton.setLocation(getWidth() / 2 - BORDER_SIZE/2, getHeight() - BORDER_SIZE);
+        helpButton.setLocation(getWidth() / 2 + BORDER_SIZE/2, getHeight() - BORDER_SIZE);
+        textView.setSize(getWidth() - BORDER_SIZE * 2, getHeight() - BORDER_SIZE * 3 - helpButton.getHeight());
     }
     
     private void setCursorOn(boolean cursorOn) {
