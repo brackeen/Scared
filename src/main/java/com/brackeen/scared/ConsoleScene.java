@@ -23,6 +23,7 @@ public class ConsoleScene extends Scene {
     private static List<String> commandHistory = new ArrayList<>();
 
     private final GameScene gameScene;
+    private BitmapFont messageFont;
     private Button backButton;
     private Button helpButton;
     private View textView;
@@ -41,7 +42,7 @@ public class ConsoleScene extends Scene {
 
         commandHistoryIndex = commandHistory.size();
         
-        final BitmapFont messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
+        messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
 
         setBackgroundColor(new Color(12, 12, 12));
         
@@ -74,13 +75,6 @@ public class ConsoleScene extends Scene {
         addSubview(textView);
 
         onResize();
-        
-        int maxLines = (int)textView.getHeight() / messageFont.getHeight();
-        for (int i = 0; i < maxLines; i++) {
-            Label label = new Label(messageFont, "");
-            label.setLocation(0, i * messageFont.getHeight());
-            textView.addSubview(label);
-        }
         
         setKeyListener(new KeyListener() {
 
@@ -143,6 +137,14 @@ public class ConsoleScene extends Scene {
         backButton.setLocation(getWidth() / 2 - BORDER_SIZE/2, getHeight() - BORDER_SIZE);
         helpButton.setLocation(getWidth() / 2 + BORDER_SIZE/2, getHeight() - BORDER_SIZE);
         textView.setSize(getWidth() - BORDER_SIZE * 2, getHeight() - BORDER_SIZE * 3 - helpButton.getHeight());
+
+        textView.removeAllSubviews();
+        int maxLines = (int)textView.getHeight() / messageFont.getHeight();
+        for (int i = 0; i < maxLines; i++) {
+            Label label = new Label(messageFont, "");
+            label.setLocation(0, i * messageFont.getHeight());
+            textView.addSubview(label);
+        }
     }
     
     private void setCursorOn(boolean cursorOn) {
