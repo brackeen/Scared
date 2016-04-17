@@ -286,6 +286,10 @@ public class View {
         subview.superview = this;
         superviewTransformModCount = -1;
     }
+    
+    public void notifySuperviewDirty() {
+        superviewTransformModCount = -1;
+    }
 
     // Notifications
     

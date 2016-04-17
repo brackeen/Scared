@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -29,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -175,13 +178,14 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     
     protected void initFrame(int width, int height) {
         // Create frame
-        JFrame frame = new JFrame(appName);
-        final Container contentPane = frame.getContentPane();
+        final JFrame frame = new JFrame(appName);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        contentPane.setBackground(Color.BLACK);
+        enableOSXFullscreen(frame);
 
-        // Add applet to frame
+        // Add applet to contentPane
         setSize(width, height);
+        final Container contentPane = frame.getContentPane();
+        contentPane.setBackground(Color.BLACK);
         contentPane.setPreferredSize(new Dimension(width, height));
         contentPane.setLayout(null);
         contentPane.add(this);
@@ -198,12 +202,25 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         start();
 
         // Resize applet on frame resize
-        contentPane.addComponentListener(new ComponentAdapter() {
+        frame.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 setBounds(contentPane.getBounds());
             }
         });
+    }
+    
+    private static void enableOSXFullscreen(Window window) {
+        try {
+            Class util = Class.forName("com.apple.eawt.FullScreenUtilities");
+            Class params[] = new Class[] { Window.class, Boolean.TYPE };
+            Method method = util.getMethod("setWindowCanFullScreen", params);
+            method.invoke(util, window, true);
+        } 
+        catch (NoSuchMethodException | SecurityException | IllegalAccessException | 
+                IllegalArgumentException | InvocationTargetException | ClassNotFoundException ex) {
+            // Ignore
+        }
     }
     
     private void setPixelScale() {
@@ -269,6 +286,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             // Resize
             if (needsResize) {
                 for (Scene scene : sceneStack) {
+                    scene.notifySuperviewDirty();
                     scene.setSize(getWidthForScene(), getHeightForScene());
                 }
             }
