@@ -1,5 +1,7 @@
 package com.brackeen.app.view;
 
+import com.brackeen.app.App;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
@@ -335,6 +337,7 @@ public class View {
         if (superview == null) {
             if (localTransformDirty || superviewTransformModCount != 0) {
                 worldTransform.setToIdentity();
+                worldTransform.scale(App.getApp().getPixelScale(), App.getApp().getPixelScale());
                 superviewTransformModCount = 0;
                 worldTransformDirty = true;
             }
