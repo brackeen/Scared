@@ -4,6 +4,7 @@ import com.brackeen.app.view.Scene;
 import com.brackeen.app.view.View;
 
 import java.applet.Applet;
+import java.awt.AlphaComposite;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Container;
@@ -24,6 +25,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -111,6 +113,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     private boolean autoPixelScale = false;
     private int autoPixelScaleBaseWidth = 320;
     private int autoPixelScaleBaseHeight = 240;
+    private BufferedImage pixelScaleBufferedImage;
     
     private final List<String> log = new ArrayList<>();
     
@@ -339,9 +342,24 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                 g.setColor(Color.BLACK);
                 g.fillRect(0, 0, getWidth(), getHeight());
             }
-            else {
+            else if (pixelScale > 1) {
+                if (pixelScaleBufferedImage == null ||
+                        pixelScaleBufferedImage.getWidth() != getWidthForScene() ||
+                        pixelScaleBufferedImage.getHeight() != getHeightForScene()) {
+                    pixelScaleBufferedImage = new BufferedImage(getWidthForScene(),
+                            getHeightForScene(),
+                            BufferedImage.TYPE_INT_RGB);
+                }
+                scene.draw(pixelScaleBufferedImage.createGraphics());
                 g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                         RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                g.setTransform(AffineTransform.getScaleInstance(pixelScale, pixelScale));
+                g.setComposite(AlphaComposite.Src);
+                g.drawImage(pixelScaleBufferedImage, 0, 0, null);
+            }
+            else {
+                pixelScaleBufferedImage = null;
+                g.setComposite(AlphaComposite.SrcOver);
                 scene.draw(g);
             }
             g.dispose();

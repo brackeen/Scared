@@ -43,6 +43,7 @@ public class View {
     private Cursor cursor;
     
     private final AffineTransform worldTransform = new AffineTransform();
+    private final AffineTransform drawTransform = new AffineTransform();
     private boolean localTransformDirty = true;
     private long localTransformModCount = 0;
     private long superviewTransformModCount = 0;
@@ -342,6 +343,7 @@ public class View {
             if (localTransformDirty || superviewTransformModCount != 0) {
                 worldTransform.setToIdentity();
                 worldTransform.scale(App.getApp().getPixelScale(), App.getApp().getPixelScale());
+                drawTransform.setToIdentity();
                 superviewTransformModCount = 0;
                 worldTransformDirty = true;
             }
@@ -350,6 +352,7 @@ public class View {
             superview.updateTransforms();
             if (localTransformDirty || superviewTransformModCount != superview.localTransformModCount) {
                 worldTransform.setTransform(superview.worldTransform);
+                drawTransform.setTransform(superview.drawTransform);
                 superviewTransformModCount = superview.localTransformModCount;
                 worldTransformDirty = true;
             }
@@ -357,11 +360,13 @@ public class View {
         
         if (worldTransformDirty) {
             worldTransform.translate(x, y);
+            drawTransform.translate(x, y);
             
             if (anchorX != 0 || anchorY != 0) {
                 float anchorLocalX = anchorX * getWidth();
                 float anchorLocalY = anchorY * getHeight();
                 worldTransform.translate(-anchorLocalX, -anchorLocalY);
+                drawTransform.translate(-anchorLocalX, -anchorLocalY);
             }
             
             localTransformModCount++;
@@ -436,7 +441,7 @@ public class View {
             }
         }
         
-        g.setTransform(worldTransform);
+        g.setTransform(drawTransform);
         if (backgroundColor != null) {
             g.setColor(backgroundColor);
             g.fill(new Rectangle2D.Float(0, 0, getWidth(), getHeight()));
