@@ -326,11 +326,15 @@ public class GameScene extends Scene {
                 }
                 else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_PAGE_UP) {
                     Player player = map.getPlayer();
-                    player.setZ(Math.min(1-1/8f, player.getZ() + 1/8f));
+                    player.setZ(Math.min(1-1/8f, player.getZ() + 1/64f));
                 }
                 else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
                     Player player = map.getPlayer();
-                    player.setZ(Math.max(1/8f, player.getZ() - 1/8f));
+                    player.setZ(Math.max(1/8f, player.getZ() - 1/64f));
+                }
+                else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_HOME) {
+                    Player player = map.getPlayer();
+                    player.setZ(0.5f);
                 }
                 else {
                     keyDown(ke.getKeyCode(), true);
