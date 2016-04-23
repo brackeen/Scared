@@ -32,7 +32,7 @@ import java.util.List;
 
 public class GameScene extends Scene {
     
-    private static final boolean DEBUG_ALLOW_CAMERA_Z_CHANGES = Boolean.parseBoolean("false");
+    private static final boolean DEBUG_ALLOW_CAMERA_Z_CHANGES = Boolean.parseBoolean("true");
 
     public static final int NUM_LEVELS = 7;
     
@@ -326,11 +326,11 @@ public class GameScene extends Scene {
                 }
                 else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_PAGE_UP) {
                     Player player = map.getPlayer();
-                    player.setZ(Math.min(1-1/8f, player.getZ() + 1/64f));
+                    player.setZ(Math.min(1-1/8f, player.getZ() + 1/128f));
                 }
                 else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
                     Player player = map.getPlayer();
-                    player.setZ(Math.max(1/8f, player.getZ() - 1/64f));
+                    player.setZ(Math.max(1/8f, player.getZ() - 1/128f));
                 }
                 else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_HOME) {
                     Player player = map.getPlayer();

@@ -4,6 +4,7 @@ import com.brackeen.app.App;
 import com.brackeen.app.view.View;
 import com.brackeen.scared.entity.Entity;
 import com.brackeen.scared.entity.Player;
+
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
@@ -15,6 +16,7 @@ import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.awt.image.ImageProducer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +69,10 @@ public class SoftRender3D extends View {
     
     private static int toFixedPoint(double n) {
         return (int)Math.floor(n * ONE);
+    }
+
+    private static int toFixedPoint(int n) {
+        return n << FRACTION_BITS;
     }
     
     private static float toFloat(int f) {
@@ -318,28 +324,32 @@ public class SoftRender3D extends View {
     }
     
     private void drawBackground() {
-        int bd = background.getWidth() * 2;
-        int backgroundX = (cameraAngle & NUM_DEGREES_MASK) * bd / NUM_DEGREES - bd;
-        dstBuffer.draw(background, backgroundX, 0, true);
-        dstBuffer.draw(background, backgroundX + background.getWidth(), 0, true);
-        dstBuffer.draw(background, backgroundX + background.getWidth() * 2, 0, true);
+        if (RENDER_TEST) {
+            Arrays.fill(dstBuffer.getData(), 0xffffff00);
+        }
+        else {
+            int bd = background.getWidth() * 2;
+            int backgroundX = (cameraAngle & NUM_DEGREES_MASK) * bd / NUM_DEGREES - bd;
+            dstBuffer.draw(background, backgroundX, 0, true);
+            dstBuffer.draw(background, backgroundX + background.getWidth(), 0, true);
+            dstBuffer.draw(background, backgroundX + background.getWidth() * 2, 0, true);
+        }
     }
     
     private void drawWalls() {
         int f_focalDistance = toFixedPoint(focalDistance);
-        int viewWidth = dstBuffer.getWidth();
-        int viewHeight = dstBuffer.getHeight();
-        for (int x = 0; x < viewWidth; x++) {
+        int dstWidth = dstBuffer.getWidth();
+        int dstHeight = dstBuffer.getHeight();
+        int f_dstMidY = ((dstHeight / 2) << FRACTION_BITS);
+        for (int x = 0; x < dstWidth; x++) {
             Ray ray = rays[x];
             if (ray.f_dist >= 0 && ray.f_dist < Integer.MAX_VALUE) {
-                int wallHeight = toIntFloor(div(f_focalDistance, ray.f_dist));
-                //wallHeight = (wallHeight + 1) & ~1; // Make it even, rounding up
-                if (wallHeight > 0) {
+                int f_wallBottom = f_dstMidY + mulDiv(f_cameraZ, f_focalDistance, ray.f_dist);
+                int f_wallTop = f_dstMidY - mulDiv(ONE - f_cameraZ, f_focalDistance, ray.f_dist);
+                if (f_wallBottom > f_wallTop) {
                     int depth = drawDepthShading ? toIntFloor(ray.f_dist * DEPTH_SCALE) : 0;
-                    int top = viewHeight / 2 - wallHeight + toIntFloor(wallHeight * f_cameraZ);
-                    ray.floorDrawY = top + wallHeight - 1;
-
-                    drawTextureSliver(ray.texture, true, ray.sliver, depth, viewWidth - x - 1, top, wallHeight);
+                    ray.floorDrawY = drawTextureSliver(ray.texture, true, ray.sliver, depth, 
+                            dstWidth - x - 1, f_wallTop, f_wallBottom);
                 }
             }
         }
@@ -413,7 +423,7 @@ public class SoftRender3D extends View {
             int depth = drawDepthShading ? toIntFloor(f_dist * DEPTH_SCALE) : 0;
             
             for (int x = startX; x < endX; x++) {
-                if (currentY > rays[x].floorDrawY) {
+                if (currentY >= rays[x].floorDrawY) {
                     int mapX = tx >> FRACTION_BITS;
                     int mapY = ty >> FRACTION_BITS;
 
@@ -478,11 +488,11 @@ public class SoftRender3D extends View {
 
                     float w = texture.getWidth() * entity.getTextureScale();
                     float h = texture.getHeight() * entity.getTextureScale();
-                    int renderWidth = (int)(focalDistance * w / dist);
-                    int renderHeight = (int)(focalDistance * h / dist);
-                    int renderX = (int)(focalDistance * thing / dist + (viewWidth - renderWidth) / 2);
-                    
-                    int renderY = (int)(viewHeight / 2 - 
+                    float renderWidth = focalDistance * w / dist;
+                    float renderHeight = focalDistance * h / dist;
+                    int f_renderWidth = toFixedPoint(renderWidth);
+                    int f_renderHeight = toFixedPoint(renderHeight);
+                    int f_renderY = toFixedPoint(viewHeight / 2 - 
                             renderHeight * (1 - cameraZ) -
                             entity.getZ() * focalDistance / dist +
                             cameraZ * (focalDistance * (1 - h) / dist));
@@ -492,15 +502,15 @@ public class SoftRender3D extends View {
                         continue;
                     }
 
+                    int renderX = (int)(focalDistance * thing / dist + (viewWidth - renderWidth) / 2);
+                    int renderX2 = Math.min(viewWidth, renderX + toIntFloor(f_renderWidth));
                     int depth = drawDepthShading ? (int)(dist * DEPTH_SCALE) : 0;
                     int f_dist = toFixedPoint(dist);
-                    int f_renderWidth = toFixedPoint(renderWidth);
-                    int renderX2 = Math.min(viewWidth, renderX + renderWidth);
                     for (int x = Math.max(renderX, 0); x < renderX2; x++) {
                         Ray ray = rays[viewWidth - x - 1];
                         if (f_dist < ray.f_dist) {
-                            int sliver = div(toFixedPoint(x - renderX), f_renderWidth);
-                            drawTextureSliver(texture, false, sliver, depth, x, renderY, renderHeight);
+                            int f_sliver = div(toFixedPoint(x - renderX), f_renderWidth);
+                            drawTextureSliver(texture, false, f_sliver, depth, x, f_renderY, f_renderY + f_renderHeight);
                         }
                     }
                 }
@@ -508,23 +518,25 @@ public class SoftRender3D extends View {
         }
     }
     
-    private void drawTextureSliver(SoftTexture srcTexture, boolean srcOpaque, int sliver, int depth,
-                                   final int dstX, final int dstY, final int dstHeight) {
+    private int drawTextureSliver(SoftTexture srcTexture, boolean srcOpaque, int f_sliver, int depth,
+                                  final int dstX, final int f_dstY1, final int f_dstY2) {
+        int dstY = toIntFloor(f_dstY1);
+        int dstHeight = toIntCeil(f_dstY2) - dstY;
+        
         // Mip-mapping. Use half-size textures if available
         while (dstHeight < srcTexture.getHeight() && srcTexture.hasHalfSizeTexture()) {
             srcTexture = srcTexture.getHalfSizeTexture();
         }
         
-        int[] dstData = dstBuffer.getData();
-        int dstViewWidth = dstBuffer.getWidth();
-        int dstViewHeight = dstBuffer.getHeight();
-        int[] srcData = srcTexture.getData();
-        int srcViewWidth = srcTexture.getWidth();
-        int srcViewHeight = srcTexture.getHeight();
-        int srcSizeBits = srcTexture.getSizeBits();
+        final int[] dstData = dstBuffer.getData();
+        final int dstViewWidth = dstBuffer.getWidth();
+        final int dstViewHeight = dstBuffer.getHeight();
+        final int[] srcData = srcTexture.getData();
+        final int srcViewWidth = srcTexture.getWidth();
+        final int srcViewHeight = srcTexture.getHeight();
+        final int srcSizeBits = srcTexture.getSizeBits();
         
-        int srcX = toIntFloor(srcViewWidth * sliver);
-        int f_dy = div(toFixedPoint(srcViewHeight), toFixedPoint(dstHeight));
+        int srcX = toIntFloor(srcViewWidth * f_sliver);
         int renderX = dstX;
         int renderY = dstY;
         int renderHeight = dstHeight;
@@ -537,39 +549,66 @@ public class SoftRender3D extends View {
         }
         
         if (renderHeight > 0) {
-            int renderY2 = renderY + renderHeight;
-            int renderOffset = renderX + renderY * dstViewWidth;
-            int renderMidY = dstViewHeight / 2;
-            int f_midX = mulDiv(toFixedPoint(-dstY + renderMidY), toFixedPoint(srcViewHeight), toFixedPoint(dstHeight)) & ~FRACTION_MASK;
-            int f_y = f_midX - f_dy * (renderMidY - renderY);
-            if (f_y < 0) {
-                // Workaround for off-by-one error somewhere
-                renderY++;
-                f_y += f_dy;
-                renderOffset += dstViewWidth;
-            }
+            final int dstViewMidY = dstViewHeight / 2;
+            int f_srcMidY = mulDiv(toFixedPoint(dstViewMidY) - f_dstY1, toFixedPoint(srcViewHeight), f_dstY2 - f_dstY1);
+            f_srcMidY = (f_srcMidY + 128) & ~0xff; // Round to nearest 1/256th
+
+            int renderY1 = renderY;
+            int renderY2 = dstViewMidY;
+            int f_dy = 0;
+            int f_y = 0;
             
-            if (srcOpaque && depth <= 256) {
-                for (int y = renderY; y < renderY2; y++) {
-                    if (RENDER_TEST) {
-                        dstData[renderOffset] = (toIntFloor(f_y) & 1) == 0 ? 0xff009900 : 0xffaaaaaa;   
-                    }
-                    else {
-                        dstData[renderOffset] = srcData[srcX + (toIntFloor(f_y) << srcSizeBits)];
-                    }
-                    renderOffset += dstViewWidth;
-                    f_y += f_dy;
-                }
+            if (renderY2 > renderY1) {
+                f_dy = div(f_srcMidY, toFixedPoint(dstViewMidY) - f_dstY1);
+                f_y = f_srcMidY - f_dy * (renderY2 - renderY1 - 1);
             }
-            else {
-                for (int y = renderY; y < renderY2; y++) {
-                    int srcColor = srcData[srcX + (toIntFloor(f_y) << srcSizeBits)];
-                    drawPixel(dstData, renderOffset, srcColor, depth);
-                    renderOffset += dstViewWidth;
-                    f_y += f_dy;
+
+            // Render in two passes - top portion, then bottom portion. f_dy might be is different each time.
+            boolean firstPass = true;
+            while (true) {
+                int renderOffset = renderX + renderY1 * dstViewWidth;
+                if (RENDER_TEST && srcOpaque) {
+                    for (int y = renderY1; y < renderY2; y++) {
+                        if (f_y < 0 || f_y >= (ONE << srcSizeBits)) {
+                            dstData[renderOffset] = 0xffff00ff;
+                        } 
+                        else {
+                            dstData[renderOffset] = (toIntFloor(f_y) & 1) == 0 ? 0xff000000 : (srcX & 1) == 0 ? 0xffaaaaaa : 0xffb4b4b4;
+                        }
+                        renderOffset += dstViewWidth;
+                        f_y += f_dy;
+                    }
+                } 
+                else if (srcOpaque && depth <= 256) {
+                    for (int y = renderY1; y < renderY2; y++) {
+                        dstData[renderOffset] = srcData[srcX + (toIntFloor(f_y) << srcSizeBits)];
+                        renderOffset += dstViewWidth;
+                        f_y += f_dy;
+                    }
+                } 
+                else {
+                    for (int y = renderY1; y < renderY2; y++) {
+                        int srcColor = srcData[srcX + (toIntFloor(f_y) << srcSizeBits)];
+                        drawPixel(dstData, renderOffset, srcColor, depth);
+                        renderOffset += dstViewWidth;
+                        f_y += f_dy;
+                    }
+                }
+                if (!firstPass) {
+                    break;
+                }
+                else {
+                    renderY1 = dstViewMidY;
+                    renderY2 = renderY + renderHeight;
+                    if (renderY2 > renderY1) {
+                        f_y = f_srcMidY;
+                        f_dy = div(toFixedPoint(srcViewHeight) - f_srcMidY, f_dstY2 - toFixedPoint(dstViewMidY));
+                    }
+                    firstPass = false;
                 }
             }
         }
+        return renderY + renderHeight;
     }
     
     private void drawPixel(int[] dstData, int dstOffset, int srcColor, int depth) {
