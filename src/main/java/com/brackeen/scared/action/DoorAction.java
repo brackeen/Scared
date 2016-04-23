@@ -6,17 +6,17 @@ import com.brackeen.scared.Tile;
 import com.brackeen.scared.entity.Player;
 
 public class DoorAction implements Action {
-    
+
     private static final int DONE = 0;
     private static final int OPENING = 1;
     private static final int OPEN = 2;
     private static final int CLOSING = 3;
     private static final int STAY_OPEN_FOREVER = 4;
-    
+
     private static final int TICKS_TO_OPEN = 12; // Fast enough to not stop the player
     private static final int TICKS_TO_CLOSE = 24;
     private static final int TICKS_WAIT_BEFORE_CLOSING = 200;
-    
+
     private final Map map;
     private final int x;
     private final int y;
@@ -24,25 +24,25 @@ public class DoorAction implements Action {
     private int state;
     private int startRenderState;
     private int ticks;
-    
+
     public DoorAction(Map map, int x, int y) {
         this.map = map;
         this.x = x;
         this.y = y;
         tile = map.getTileAt(x, y);
-        
+
         SoundPlayer3D.play("/sound/doorwoosh.wav", map.getPlayer(), x, y);
         setState(OPENING);
     }
-    
+
     public int getTileX() {
         return x;
     }
-    
+
     public int getTileY() {
         return y;
     }
-    
+
     private void setState(int state) {
         this.state = state;
         tile.state = state;
@@ -52,7 +52,7 @@ public class DoorAction implements Action {
 
     @Override
     public void unload() {
-        
+
     }
 
     @Override
@@ -65,14 +65,14 @@ public class DoorAction implements Action {
         if (isFinished()) {
             return;
         }
-        
+
         ticks++;
-        
+
         // State set outside of this handler
         if (state != tile.state) {
             setState(tile.state);
         }
-        
+
         switch (state) {
             case OPENING:
                 tile.renderState = startRenderState + ticks * Tile.RENDER_STATE_MAX / TICKS_TO_OPEN;
@@ -93,8 +93,7 @@ public class DoorAction implements Action {
             case CLOSING:
                 if (!shouldClose()) {
                     setState(OPENING);
-                }
-                else {
+                } else {
                     if (tile.renderState == Tile.RENDER_STATE_MAX) {
                         SoundPlayer3D.play("/sound/doorwoosh.wav", map.getPlayer(), x, y);
                     }
@@ -113,7 +112,7 @@ public class DoorAction implements Action {
                 break;
         }
     }
-    
+
     private boolean shouldClose() {
         if (tile.hasEntities()) {
             return false;

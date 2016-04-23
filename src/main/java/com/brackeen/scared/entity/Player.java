@@ -5,7 +5,7 @@ import com.brackeen.scared.Map;
 import com.brackeen.scared.Tile;
 
 public class Player extends Entity {
-        
+
     public static final int MAX_AMMO = 100;
     public static final int MAX_HEALTH = 100;
     public static final int MAX_NUCLEAR_HEALTH = 200;
@@ -15,16 +15,16 @@ public class Player extends Entity {
     private final Map map;
     private int health = DEFAULT_HEALTH;
     private int ammo = DEFAULT_AMMO;
-    
+
     private int keys = 1;
     private int kills = 0;
     private int secrets = 0;
     private int hitWarningTicksRemaining = 0;
-    
+
     private boolean godMode = false;
     private boolean freezeEnemies = false;
     private boolean isAlive = true;
-    
+
     public Player(Map map) {
         super(0.25f, 0, 0);
         this.map = map;
@@ -82,41 +82,39 @@ public class Player extends Entity {
     public boolean wasHitRecently() {
         return hitWarningTicksRemaining > 0;
     }
-    
+
     @Override
     public void setTile(Tile tile) {
         if (tile != null && tile != getTile()) {
-            map.notifyPlayerEnteredTile((int)getX(), (int)getY());
+            map.notifyPlayerEnteredTile((int) getX(), (int) getY());
         }
         super.setTile(tile);
     }
-    
+
     public boolean hurt(int points) {
         if (godMode || !isAlive() || points <= 0) {
             return false;
-        }
-        else {
+        } else {
             hitWarningTicksRemaining = 12;
             health -= points;
             if (health <= 0) {
                 health = 0;
                 isAlive = false;
                 App.getApp().getAudio("/sound/player_dead.wav", 1).play();
-            }
-            else if (points > 15) {
+            } else if (points > 15) {
                 App.getApp().getAudio("/sound/player_hurt.wav", 1).play();
             }
             return true;
         }
     }
-    
+
     @Override
     public void tick() {
         if (hitWarningTicksRemaining > 0) {
             hitWarningTicksRemaining--;
         }
     }
-    
+
     public boolean isAlive() {
         return isAlive;
     }
@@ -124,12 +122,12 @@ public class Player extends Entity {
     public void setAlive(boolean isAlive) {
         this.isAlive = isAlive;
     }
-    
+
     @Override
     public boolean onCollisionWithEntityShouldSlide() {
         return true;
     }
-    
+
     @Override
     public boolean onCollisionWithWallShouldSlide() {
         return true;
@@ -138,7 +136,7 @@ public class Player extends Entity {
     public boolean hasKey(int key) {
         return (keys & (1 << key)) != 0;
     }
-    
+
     public void addKey(int key) {
         keys |= (1 << key);
     }

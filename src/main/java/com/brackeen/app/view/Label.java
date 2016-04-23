@@ -1,18 +1,19 @@
 package com.brackeen.app.view;
 
 import com.brackeen.app.BitmapFont;
+
 import java.awt.Graphics2D;
 
 @SuppressWarnings("unused")
 public class Label extends View {
-    
+
     private BitmapFont font;
     private String text;
-    
+
     public Label() {
-        
+
     }
-    
+
     public Label(BitmapFont font, String text) {
         this.font = font;
         this.text = text;
@@ -34,24 +35,23 @@ public class Label extends View {
     public void setText(String text) {
         this.text = text;
     }
-    
+
     @Override
     public void sizeToFit() {
         if (font == null) {
             setSize(0, 0);
-        }
-        else {
+        } else {
             setSize(font.getStringWidth(text), font.getHeight());
         }
     }
-    
+
     @Override
     public void onDraw(Graphics2D g) {
         if (font != null) {
             font.drawString(g, text);
         }
     }
-    
+
     public static View makeMultilineLabel(BitmapFont font, String text, float anchorX) {
         View view = new View();
         int y = 0;
@@ -69,7 +69,7 @@ public class Label extends View {
             label.setAnchor(anchorX, 0);
             view.addSubview(label);
             y += font.getHeight();
-            
+
             if (newIndex == -1) {
                 break;
             }

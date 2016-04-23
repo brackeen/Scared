@@ -46,19 +46,19 @@ import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
 /**
-The App class sets up the animation loop and provides methods to load images and set the 
-current scene.
-*/
+ * The App class sets up the animation loop and provides methods to load images and set the
+ * current scene.
+ */
 @SuppressWarnings("unused")
-public abstract class App extends Applet implements MouseListener, MouseMotionListener, 
+public abstract class App extends Applet implements MouseListener, MouseMotionListener,
         KeyListener, FocusListener {
-    
+
     private static final InheritableThreadLocal<App> APP = new InheritableThreadLocal<>();
-    
+
     public static App getApp() {
         return APP.get();
     }
-    
+
     private static final int MAX_LOG_LINES = 1000;
 
     public static void log(String statement) {
@@ -68,14 +68,14 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     public static void logError(String statement) {
         log(statement, true);
     }
-    
+
     private static void log(String statement, boolean toSystemOut) {
         if (toSystemOut) {
             System.out.println(statement);
         }
-        
+
         List<String> log = App.getApp().getLog();
-        
+
         // Split on newlines
         int index = 0;
         while (true) {
@@ -87,7 +87,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             log.add(statement.substring(index, newIndex));
             index = newIndex + 1;
         }
-        
+
         while (log.size() > MAX_LOG_LINES) {
             log.remove(0);
         }
@@ -101,7 +101,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         public void actionPerformed(ActionEvent ae) {
             tick();
         }
-        
+
     });
     private long lastTime = 0;
     private double remainingTime = 0;
@@ -114,9 +114,9 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     private int autoPixelScaleBaseWidth = 320;
     private int autoPixelScaleBaseHeight = 240;
     private BufferedImage pixelScaleBufferedImage;
-    
+
     private final List<String> log = new ArrayList<>();
-    
+
     private final HashMap<String, WeakReference<BufferedImage>> imageCache = new HashMap<>();
     private final HashMap<String, BufferedAudio> loadedAudio = new HashMap<>();
     private final Stack<Scene> sceneStack = new Stack<>();
@@ -126,23 +126,23 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     private Canvas canvas;
     private int mouseX = -1;
     private int mouseY = -1;
-    
+
     public App() {
         APP.set(this);
         setBackground(Color.BLACK);
     }
-    
+
     public List<String> getLog() {
         return log;
     }
-    
+
     // Applet callbacks
-        
+
     @Override
     public synchronized void init() {
-       
+
     }
-    
+
     @Override
     public synchronized void start() {
         lastTime = System.nanoTime();
@@ -152,12 +152,12 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         actualFrameRateTickCount = 0;
         timer.start();
     }
-    
+
     @Override
     public synchronized void stop() {
         timer.stop();
     }
-    
+
     @Override
     public synchronized void destroy() {
         while (canPopScene()) {
@@ -178,7 +178,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         canvas = null;
         removeAll();
     }
-    
+
     protected void initFrame(int width, int height) {
         // Create frame
         final JFrame frame = new JFrame(appName);
@@ -196,8 +196,8 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         // Show frame
         frame.pack();
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setLocation(Math.max(0, (dim.width - frame.getWidth())/2),
-                Math.max(0, (dim.height - frame.getHeight())/2));
+        frame.setLocation(Math.max(0, (dim.width - frame.getWidth()) / 2),
+                Math.max(0, (dim.height - frame.getHeight()) / 2));
         frame.setVisible(true);
 
         // Start
@@ -212,20 +212,19 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             }
         });
     }
-    
+
     private static void enableOSXFullscreen(Window window) {
         try {
             Class util = Class.forName("com.apple.eawt.FullScreenUtilities");
-            Class params[] = new Class[] { Window.class, Boolean.TYPE };
+            Class params[] = new Class[]{Window.class, Boolean.TYPE};
             Method method = util.getMethod("setWindowCanFullScreen", params);
             method.invoke(util, window, true);
-        } 
-        catch (NoSuchMethodException | SecurityException | IllegalAccessException | 
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                 IllegalArgumentException | InvocationTargetException | ClassNotFoundException ex) {
             // Ignore
         }
     }
-    
+
     private void setPixelScale() {
         float area = getWidth() * getHeight();
         float areaFactor = (float) (Math.sqrt(area / (autoPixelScaleBaseWidth * autoPixelScaleBaseHeight)));
@@ -233,22 +232,21 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         pixelScale = Math.max(1, pixelScale);
         setPixelScale(pixelScale);
     }
-    
+
     private synchronized void tick() {
         long tickTime = System.nanoTime();
         if (tickTime - lastTickTime < 1000000000 / frameRate - 750000) {
             return;
-        }
-        else {
+        } else {
             lastTickTime = tickTime;
         }
-        
+
         boolean needsResize = false;
         if (App.getApp() == null) {
             // For appletviewer
             APP.set(this);
         }
-        if (bufferStrategy != null && canvas != null && 
+        if (bufferStrategy != null && canvas != null &&
                 (canvas.getWidth() != getWidth() || canvas.getHeight() != getHeight())) {
             bufferStrategy.dispose();
             bufferStrategy = null;
@@ -267,14 +265,12 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             try {
                 canvas.createBufferStrategy(2);
                 bufferStrategy = canvas.getBufferStrategy();
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 // Do nothing
             }
             if (bufferStrategy == null) {
                 canvas = null;
-            }
-            else {
+            } else {
                 canvas.addMouseListener(this);
                 canvas.addMouseMotionListener(this);
                 canvas.addKeyListener(this);
@@ -293,22 +289,20 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                     scene.setSize(getWidthForScene(), getHeightForScene());
                 }
             }
-            
+
             // Tick
             View scene = null;
             double elapsedTime = (System.nanoTime() - lastTime) / 1000000000.0 + remainingTime;
-            int ticks = (int)(frameRate * elapsedTime);
+            int ticks = (int) (frameRate * elapsedTime);
             if (ticks == 0) {
                 if (!sceneStack.isEmpty()) {
                     scene = sceneStack.peek();
                 }
-            }
-            else {
+            } else {
                 if (ticks > 4) {
                     ticks = 4;
                     remainingTime = 0;
-                } 
-                else {
+                } else {
                     remainingTime = Math.max(0, elapsedTime - ticks / frameRate);
                 }
                 for (int i = 0; i < ticks; i++) {
@@ -320,7 +314,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                 }
                 lastTime = System.nanoTime();
             }
-            
+
             // Set cursor
             Cursor cursor = Cursor.getDefaultCursor();
             if (scene != null) {
@@ -337,12 +331,11 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             setCursor(cursor);
 
             // Draw
-            Graphics2D g = (Graphics2D)bufferStrategy.getDrawGraphics();
+            Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
             if (scene == null) {
                 g.setColor(Color.BLACK);
                 g.fillRect(0, 0, getWidth(), getHeight());
-            }
-            else if (pixelScale > 1) {
+            } else if (pixelScale > 1) {
                 if (pixelScaleBufferedImage == null ||
                         pixelScaleBufferedImage.getWidth() != getWidthForScene() ||
                         pixelScaleBufferedImage.getHeight() != getHeightForScene()) {
@@ -356,23 +349,21 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                 g.setTransform(AffineTransform.getScaleInstance(pixelScale, pixelScale));
                 g.setComposite(AlphaComposite.Src);
                 g.drawImage(pixelScaleBufferedImage, 0, 0, null);
-            }
-            else {
+            } else {
                 pixelScaleBufferedImage = null;
                 g.setComposite(AlphaComposite.SrcOver);
                 scene.draw(g);
             }
             g.dispose();
             bufferStrategy.show();
-            
+
             // Frame rate
             actualFrameRateTickCount++;
             if (lastTime - actualFrameRateLastTime >= 500000000) {
                 float duration = (lastTime - actualFrameRateLastTime) / 1000000000.0f;
                 if (actualFrameRateLastTime == 0) {
                     actualFrameRate = 0;
-                }
-                else {
+                } else {
                     actualFrameRate = actualFrameRateTickCount / duration;
                 }
                 actualFrameRateTickCount = 0;
@@ -408,7 +399,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     public void setAutoPixelScale(boolean autoPixelScale) {
         this.autoPixelScale = autoPixelScale;
     }
-    
+
     public void setAutoPixelScaleBaseSize(int w, int h) {
         this.autoPixelScaleBaseWidth = w;
         this.autoPixelScaleBaseHeight = h;
@@ -421,12 +412,11 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         try {
             File file = new File(System.getProperty("user.dir") + "/src/main/resources/" + name);
             return file.toURI().toURL();
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             return null;
         }
     }
-    
+
     public static URL getResource(String name) {
         URL url = App.class.getResource(name);
         if (url == null) {
@@ -442,20 +432,19 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             if (url != null) {
                 try {
                     return url.openStream();
-                }
-                catch (IOException ex) {
+                } catch (IOException ex) {
                     return null;
                 }
             }
         }
         return is;
     }
-    
+
     /**
-    Get an audio file. The first time the audio is loaded, the maxSimultaneousStreams param
-    sets how many times the audio file can be played at the same time. If the audio file was
-    previously loaded, the maxSimultaneousStreams is ignored.
-    */
+     * Get an audio file. The first time the audio is loaded, the maxSimultaneousStreams param
+     * sets how many times the audio file can be played at the same time. If the audio file was
+     * previously loaded, the maxSimultaneousStreams is ignored.
+     */
     public BufferedAudio getAudio(String audioName, int maxSimultaneousStreams) {
         BufferedAudio audio = loadedAudio.get(audioName);
         if (audio == null && audioName != null) {
@@ -467,19 +456,18 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                         loadedAudio.put(audioName, audio);
                     }
                 }
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 // Do nothing
             }
         }
-        
+
         if (audio == null) {
             logError("Could not load audio: " + audioName);
             audio = BufferedAudio.DUMMY_AUDIO;
         }
         return audio;
     }
-    
+
     public void unloadAudio(String audioName) {
         BufferedAudio audio = loadedAudio.get(audioName);
         if (audio != null) {
@@ -487,10 +475,10 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             audio.dispose();
         }
     }
-    
+
     /**
-    Gets an image. Returns a previously-loaded cached image if available.
-    */
+     * Gets an image. Returns a previously-loaded cached image if available.
+     */
     public BufferedImage getImage(String imageName) {
         BufferedImage image = null;
         WeakReference<BufferedImage> cachedImage = imageCache.get(imageName);
@@ -506,96 +494,89 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                         imageCache.put(imageName, new WeakReference<>(image));
                     }
                 }
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 // Do nothing
             }
         }
-        
+
         if (image == null) {
             logError("Could not load image: " + imageName);
         }
         return image;
     }
-    
+
     // Scene
-    
+
     public abstract Scene createFirstScene();
-    
+
     public boolean canPopScene() {
         return sceneStack.size() > 0;
     }
-    
+
     public void popScene() {
         View scene = sceneStack.pop();
         scene.unload();
     }
-    
+
     public void pushScene(Scene scene) {
         scene.setSize(getWidthForScene(), getHeightForScene());
         scene.load();
         sceneStack.push(scene);
     }
-    
+
     public void setScene(Scene scene) {
         if (canPopScene()) {
             popScene();
         }
         pushScene(scene);
     }
-    
+
     private int getWidthForScene() {
-        return (int)Math.ceil((float)getWidth() / pixelScale);
+        return (int) Math.ceil((float) getWidth() / pixelScale);
     }
 
     private int getHeightForScene() {
-        return (int)Math.ceil((float)getHeight() / pixelScale);
+        return (int) Math.ceil((float) getHeight() / pixelScale);
     }
 
     // Input
-    
+
     private KeyListener getFocusedViewKeyListener() {
         if (sceneStack.size() == 0) {
             return null;
-        }
-        else {
+        } else {
             Scene scene = sceneStack.peek();
             View focusedView = scene.getFocusedView();
             if (focusedView == null) {
                 // No focusedView
                 return null;
-            }
-            else if (focusedView.getRoot() != scene) {
+            } else if (focusedView.getRoot() != scene) {
                 // The focusedView not in current scene graph
                 return null;
-            }
-            else {
+            } else {
                 return focusedView.getKeyListener();
             }
         }
     }
-    
+
     private FocusListener getFocusedViewFocusListener() {
         if (sceneStack.size() == 0) {
             return null;
-        }
-        else {
+        } else {
             Scene scene = sceneStack.peek();
             View focusedView = scene.getFocusedView();
             if (focusedView == null) {
                 // No focusedView
                 return null;
-            }
-            else if (focusedView.getRoot() != scene) {
+            } else if (focusedView.getRoot() != scene) {
                 // The focusedView not in current scene graph
                 return null;
-            }
-            else {
+            } else {
                 return focusedView.getFocusListener();
             }
         }
     }
-    
+
     private View getMousePick(MouseEvent e) {
         View pick = null;
         mouseX = e.getX();
@@ -606,11 +587,11 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
 
         return pick;
     }
-    
+
     private void dispatchEnterEvents(View view, MouseEvent e) {
         while (view != null) {
             currViewsWithTouchInside.add(view);
-            
+
             MouseListener l = view.getMouseListener();
             if (l != null && !prevViewsWithTouchInside.contains(view)) {
                 l.mouseEntered(e);
@@ -618,7 +599,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             view = view.getSuperview();
         }
     }
-    
+
     private void dispatchExitEvents(MouseEvent e) {
         for (View oldView : prevViewsWithTouchInside) {
             MouseListener l = oldView.getMouseListener();
@@ -626,16 +607,16 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                 l.mouseExited(e);
             }
         }
-        
+
         // Swap
         List<View> temp = prevViewsWithTouchInside;
         prevViewsWithTouchInside = currViewsWithTouchInside;
         currViewsWithTouchInside = temp;
         currViewsWithTouchInside.clear();
     }
-    
+
     // Propagate mouse events until it is consumed.
-    
+
     public void mouseClicked(MouseEvent e) {
         View view = getMousePick(e);
         while (view != null) {
@@ -670,7 +651,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             view = view.getSuperview();
         }
     }
-    
+
     public void mouseReleased(MouseEvent e) {
         View view = getMousePick(e);
         while (view != null) {
@@ -703,22 +684,22 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             }
             view = view.getSuperview();
         }
-        
+
         dispatchExitEvents(e);
     }
-    
+
     public void mouseEntered(MouseEvent e) {
         mouseMoved(e);
     }
-    
+
     public void mouseExited(MouseEvent e) {
         mouseMoved(e);
     }
-         
+
     public void mouseDragged(MouseEvent e) {
         mouseMoved(e);
     }
-    
+
     public void keyPressed(KeyEvent e) {
         KeyListener keyListener = getFocusedViewKeyListener();
         if (keyListener != null) {
@@ -739,7 +720,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             keyListener.keyTyped(e);
         }
     }
-    
+
     public void focusGained(FocusEvent e) {
         FocusListener focusListener = getFocusedViewFocusListener();
         if (focusListener != null) {

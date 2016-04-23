@@ -5,9 +5,9 @@ import java.awt.image.BufferedImage;
 
 @SuppressWarnings("unused")
 public class ImageView extends View {
-    
+
     private BufferedImage image;
-    
+
     public ImageView(BufferedImage image) {
         this.image = image;
         sizeToFit();
@@ -20,17 +20,16 @@ public class ImageView extends View {
     public void setImage(BufferedImage image) {
         this.image = image;
     }
-    
+
     @Override
     public void sizeToFit() {
         if (image == null) {
             setSize(0, 0);
-        }
-        else {
+        } else {
             setSize(image.getWidth(), image.getHeight());
         }
     }
-    
+
     @Override
     public void onDraw(Graphics2D g) {
         if (image != null) {

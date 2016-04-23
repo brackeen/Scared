@@ -10,17 +10,17 @@ public class Stats {
     public int numEnemyShotsFiredHit;
     public boolean cheated;
     public long startTime;
-    
+
     public Stats() {
         startTime = System.nanoTime();
     }
-    
+
     // End-of-level stats
     public int numSecretsFound;
     public int numKills;
     public int totalSecrets;
     public int totalEnemies;
-    
+
     public String getDescription(Map map, int level) {
         final int padWidth = 39;
         String playerAccuracy = (numShotsFired == 0) ? "N/A" : String.format("%.1f%%",
@@ -38,7 +38,7 @@ public class Stats {
                 padLine("               Time: " + getTimeElapsed(startTime), padWidth) + "\n" +
                 padLine("            Cheated: " + (cheated ? "YES" : "NO"), padWidth));
     }
-    
+
     private static String getTimeElapsed(long startTimeNanos) {
         long nanos = System.nanoTime() - startTimeNanos;
         return String.format("%02d:%02d:%02d.%03d",
@@ -51,7 +51,7 @@ public class Stats {
                         TimeUnit.SECONDS.toMillis(TimeUnit.NANOSECONDS.toSeconds(nanos))
         );
     }
-    
+
     private static String padLine(String line, int minLength) {
         // Poor man's center on the colon
         if (line != null && line.length() < minLength) {

@@ -9,9 +9,9 @@ public class MovableWallAction implements Action {
 
     public static final int STATE_DONE = 0;
     private static final int STATE_MOVING = 1;
-    
+
     private static final int TICKS_PER_TILE_MOVE = 60;
-    
+
     private final Map map;
     private int x;
     private int y;
@@ -21,24 +21,24 @@ public class MovableWallAction implements Action {
     private final SoftTexture floorTexture;
     private int index;
     private int ticks;
-    
+
     public MovableWallAction(Map map, int x, int y) {
-        int playerTileX = (int)map.getPlayer().getX();
-        int playerTileY = (int)map.getPlayer().getY();
-        
+        int playerTileX = (int) map.getPlayer().getX();
+        int playerTileY = (int) map.getPlayer().getY();
+
         this.map = map;
         this.x = x;
         this.y = y;
         this.dx = x - playerTileX;
         this.dy = y - playerTileY;
-        
+
         Tile playerTile = map.getTileAt(playerTileX, playerTileY);
         tile = map.getTileAt(x, y);
         tile.state = STATE_MOVING;
-        
+
         map.setDefaultFloorTexture(playerTile.getTexture());
         floorTexture = playerTile.getTexture();
-        
+
         App.getApp().getAudio("/sound/wallmove.wav", 1).play();
         index = 0;
         ticks = 0;
@@ -63,8 +63,7 @@ public class MovableWallAction implements Action {
         if (ticks < TICKS_PER_TILE_MOVE) {
             ticks++;
             tile.renderState = Tile.RENDER_STATE_MAX * ticks / TICKS_PER_TILE_MOVE;
-        }
-        else {
+        } else {
             index++;
             SoftTexture texture = tile.getTexture();
             tile.setTexture(floorTexture);
@@ -91,5 +90,5 @@ public class MovableWallAction implements Action {
             }
             ticks = 0;
         }
-    }    
+    }
 }

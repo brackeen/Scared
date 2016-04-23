@@ -12,18 +12,18 @@ public class GeneratorAction implements Action {
     private final int sourceTileX;
     private final int sourceTileY;
     private BufferedAudio.Stream stream;
-    
+
     public GeneratorAction(Map map, int x, int y) {
         this.player = map.getPlayer();
         this.sourceTileX = x;
         this.sourceTileY = y;
         BufferedAudio audio = App.getApp().getAudio("/sound/bigfan.wav", 1);
-        
+
         float volume = SoundPlayer3D.getVolume(player, sourceTileX, sourceTileY);
         float pan = SoundPlayer3D.getPan(player, sourceTileX, sourceTileY);
         stream = audio.play(volume, pan, true);
     }
-    
+
     @Override
     public void tick() {
         if (stream != null) {

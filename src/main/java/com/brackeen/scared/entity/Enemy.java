@@ -9,9 +9,9 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 public class Enemy extends Entity {
-    
+
     public static final int NUM_IMAGES = 15;
-    
+
     private static final int STATE_ASLEEP = 0;
     private static final int STATE_TERMINATE = 1;
     private static final int STATE_MOVE_LEFT = 2;
@@ -25,11 +25,13 @@ public class Enemy extends Entity {
     private static final int STATE_HURT = 9;
     private static final int STATE_DYING = 10;
     private static final int STATE_DEAD = 11;
-    
+
+    // @formatter:off
     //                                 state =   0   1   2   3   4   5   6   7   8   9  10  11
     private static final int[] STATE_TEXTURE = { 0,  0,  2,  4,  6,  8,  0, 10, 11, 12, 13, 14 };
     private static final int[] STATE_TICKS =  { 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12 };
-    
+    // @formatter:on
+
     private static final float STEP_SIZE = 0.05f;
 
     private final SoftTexture[] textures;
@@ -41,10 +43,10 @@ public class Enemy extends Entity {
     private int ticksRemaining;
     private int ticks;
     private double aimAngle;
-    
+
     private boolean playerVisibilityNeedsCalculation;
     private boolean isPlayerVisible;
-    
+
     public Enemy(Map map, Stats stats, SoftTexture[] textures, float x, float y, int type) {
         super(0.25f, x, y);
         this.textures = textures;
@@ -54,35 +56,36 @@ public class Enemy extends Entity {
         setTextureScale(getTextureScale() / 2);
         setZ(-4f / DEFAULT_PIXELS_PER_TILE);
         setState(STATE_ASLEEP);
-        
+
         switch (type) {
-        case 1: default:
-            health = 20;
-            STATE_TICKS[STATE_READY] = 18;
-            STATE_TICKS[STATE_AIM] = 40;
-            p = .1;
-            break;
+            case 1:
+            default:
+                health = 20;
+                STATE_TICKS[STATE_READY] = 18;
+                STATE_TICKS[STATE_AIM] = 40;
+                p = .1;
+                break;
 
-        case 2:
-            health = 30;
-            STATE_TICKS[STATE_READY] = 12;
-            STATE_TICKS[STATE_AIM] = 24;
-            p = .05;
-            break;
+            case 2:
+                health = 30;
+                STATE_TICKS[STATE_READY] = 12;
+                STATE_TICKS[STATE_AIM] = 24;
+                p = .05;
+                break;
 
-        case 3:
-            health = 50;
-            STATE_TICKS[STATE_READY] = 6;
-            STATE_TICKS[STATE_AIM] = 18;
-            p = .1;
-            break;
+            case 3:
+                health = 50;
+                STATE_TICKS[STATE_READY] = 6;
+                STATE_TICKS[STATE_AIM] = 18;
+                p = .1;
+                break;
 
-        case 4:
-            health = 80;
-            STATE_TICKS[STATE_READY] = 0;
-            STATE_TICKS[STATE_AIM] = 12;
-            p = .03;
-            break;
+            case 4:
+                health = 80;
+                STATE_TICKS[STATE_READY] = 0;
+                STATE_TICKS[STATE_AIM] = 12;
+                p = .03;
+                break;
         }
     }
 
@@ -99,41 +102,38 @@ public class Enemy extends Entity {
     public boolean hurt(int points) {
         if (health <= 0) {
             return false;
-        }
-        else {
+        } else {
             health -= points;
             boolean gotoHurtState = false;
-            
+
             if (health <= 0) {
                 gotoHurtState = true;
-            }
-            else if (state == STATE_FIRE) {
+            } else if (state == STATE_FIRE) {
                 // 50% of interrupting firing
                 if (Math.random() < .5) {
                     gotoHurtState = true;
                 }
-            }
-            else if (state != STATE_HURT) {
+            } else if (state != STATE_HURT) {
                 gotoHurtState = true;
             }
-            
+
             if (gotoHurtState) {
                 setState(STATE_HURT);
             }
             return true;
         }
     }
-    
+
     @Override
     public boolean notifyCollision(Entity movingEntity) {
         return true;
     }
-    
+
     private boolean isPlayerVisible(float angleToPlayer) {
         if (playerVisibilityNeedsCalculation) {
             playerVisibilityNeedsCalculation = false;
             isPlayerVisible = false;
-            Point2D.Float point = map.getWallCollision(getX(), getY(), (float)Math.toDegrees(angleToPlayer));
+            Point2D.Float point = map.getWallCollision(getX(), getY(), (float) Math.toDegrees(angleToPlayer));
             if (point != null) {
                 List<Entity> playerHit = map.getCollisions(Player.class, getX(), getY(), point.x, point.y);
                 if (playerHit.size() > 0) {
@@ -143,17 +143,17 @@ public class Enemy extends Entity {
         }
         return isPlayerVisible;
     }
-    
+
     @Override
     public void tick() {
         playerVisibilityNeedsCalculation = true;
         Player player = map.getPlayer();
-        
+
         float stepx = 0;
         float stepy = 0;
         float dx = player.getX() - getX();
         float dy = player.getY() - getY();
-        float angleToPlayer = (float)Math.atan2(dy, dx);
+        float angleToPlayer = (float) Math.atan2(dy, dx);
 
         if ((ticksRemaining <= 0 || state == STATE_TERMINATE) && Math.abs(dx) < 2f && Math.abs(dy) < 2f && state < STATE_READY) {
             // Player is very close - move immediately or fire
@@ -161,19 +161,17 @@ public class Enemy extends Entity {
 
             if (pq < 0.25f) {
                 setState(STATE_MOVE_FAR_LEFT);
-            }
-            else if (pq < 0.50f) {
+            } else if (pq < 0.50f) {
                 setState(STATE_MOVE_FAR_RIGHT);
-            }
-            else {
+            } else {
                 setState(STATE_READY);
             }
-        }
-        else if (state > STATE_ASLEEP && state < STATE_READY && Math.random() < p) {
+        } else if (state > STATE_ASLEEP && state < STATE_READY && Math.random() < p) {
             // When moving, randomly change to another move state
-            int s = (int)Math.round(Math.random() * 6);
+            int s = (int) Math.round(Math.random() * 6);
             switch (s) {
-                case 0: default:
+                case 0:
+                default:
                     setState(STATE_TERMINATE);
                     break;
                 case 1:
@@ -191,44 +189,43 @@ public class Enemy extends Entity {
                 case 5:
                     if (isPlayerVisible(angleToPlayer)) {
                         setState(STATE_READY);
-                    }
-                    else {
+                    } else {
                         setState(STATE_TERMINATE);
                     }
                     break;
             }
         }
-        
+
         switch (state) {
             case STATE_ASLEEP:
                 if (isPlayerVisible(angleToPlayer)) {
                     setState(STATE_TERMINATE);
                 }
                 break;
-                
+
             case STATE_TERMINATE:
-                stepx = (float)Math.cos(angleToPlayer) * STEP_SIZE;
-                stepy = (float)Math.sin(angleToPlayer) * STEP_SIZE;
+                stepx = (float) Math.cos(angleToPlayer) * STEP_SIZE;
+                stepy = (float) Math.sin(angleToPlayer) * STEP_SIZE;
                 break;
 
             case STATE_MOVE_LEFT:
-                stepx = (float)Math.cos(angleToPlayer + Math.PI/4) * STEP_SIZE;
-                stepy = (float)Math.sin(angleToPlayer + Math.PI/4) * STEP_SIZE;
+                stepx = (float) Math.cos(angleToPlayer + Math.PI / 4) * STEP_SIZE;
+                stepy = (float) Math.sin(angleToPlayer + Math.PI / 4) * STEP_SIZE;
                 break;
 
             case STATE_MOVE_RIGHT:
-                stepx = (float)Math.cos(angleToPlayer - Math.PI/4) * STEP_SIZE;
-                stepy = (float)Math.sin(angleToPlayer - Math.PI/4) * STEP_SIZE;
+                stepx = (float) Math.cos(angleToPlayer - Math.PI / 4) * STEP_SIZE;
+                stepy = (float) Math.sin(angleToPlayer - Math.PI / 4) * STEP_SIZE;
                 break;
 
             case STATE_MOVE_FAR_LEFT:
-                stepx = (float)Math.cos(angleToPlayer + Math.PI/2) * STEP_SIZE;
-                stepy = (float)Math.sin(angleToPlayer + Math.PI/2) * STEP_SIZE;
+                stepx = (float) Math.cos(angleToPlayer + Math.PI / 2) * STEP_SIZE;
+                stepy = (float) Math.sin(angleToPlayer + Math.PI / 2) * STEP_SIZE;
                 break;
 
             case STATE_MOVE_FAR_RIGHT:
-                stepx = (float)Math.cos(angleToPlayer - Math.PI/2) * STEP_SIZE;
-                stepy = (float)Math.sin(angleToPlayer - Math.PI/2) * STEP_SIZE;
+                stepx = (float) Math.cos(angleToPlayer - Math.PI / 2) * STEP_SIZE;
+                stepy = (float) Math.sin(angleToPlayer - Math.PI / 2) * STEP_SIZE;
                 break;
 
             case STATE_READY:
@@ -242,8 +239,7 @@ public class Enemy extends Entity {
                     if (player.isAlive() && isPlayerVisible(angleToPlayer)) {
                         aimAngle = angleToPlayer;
                         setState(STATE_FIRE);
-                    }
-                    else {
+                    } else {
                         setState(STATE_TERMINATE);
                     }
                 }
@@ -252,14 +248,13 @@ public class Enemy extends Entity {
             case STATE_FIRE:
                 if (player.isFreezeEnemies()) {
                     setState(STATE_TERMINATE);
-                }
-                else if (ticksRemaining <= 0) {
+                } else if (ticksRemaining <= 0) {
                     App.getApp().getAudio("/sound/laser0.wav", 1).play();
                     stats.numEnemyShotsFired++;
 
                     // fire shot
                     if (isPlayerVisible(angleToPlayer)) {
-                        Point2D.Float point = map.getWallCollision(getX(), getY(), (float)Math.toDegrees(aimAngle));
+                        Point2D.Float point = map.getWallCollision(getX(), getY(), (float) Math.toDegrees(aimAngle));
                         if (point != null) {
                             List<Entity> playerHit = map.getCollisions(Player.class, getX(), getY(), point.x, point.y);
                             if (playerHit.size() > 0) {
@@ -268,10 +263,9 @@ public class Enemy extends Entity {
                                 double diffAngle = Math.abs(aimAngle - angleToPlayer);
                                 int hitPoints = 0;
                                 if (diffAngle < .04) { // about 2.3 degrees
-                                    hitPoints = 15 + (int)Math.round(Math.random() * 7);
-                                }
-                                else if (diffAngle < .25) { // about 15 degrees
-                                    hitPoints = 3 + (int)Math.round(Math.random() * 5);
+                                    hitPoints = 15 + (int) Math.round(Math.random() * 7);
+                                } else if (diffAngle < .25) { // about 15 degrees
+                                    hitPoints = 3 + (int) Math.round(Math.random() * 5);
                                 }
 
                                 boolean actuallyHurt = player.hurt(hitPoints);
@@ -281,7 +275,7 @@ public class Enemy extends Entity {
                             }
                         }
                     }
-                    
+
                     setState(STATE_TERMINATE);
                 }
 
@@ -293,11 +287,9 @@ public class Enemy extends Entity {
                     if (health <= 0) {
                         App.getApp().getAudio("/sound/enemy_dead.wav", 1).play();
                         setState(STATE_DYING);
-                    }
-                    else if (Math.random() < .666) {
+                    } else if (Math.random() < .666) {
                         setState(STATE_TERMINATE);
-                    }
-                    else {
+                    } else {
                         setState(STATE_ASLEEP);
                         // immediate fire
                         aimAngle = angleToPlayer;
@@ -306,7 +298,7 @@ public class Enemy extends Entity {
 
                 }
                 break;
-                
+
             case STATE_DYING:
                 if (ticksRemaining <= 0) {
                     setState(STATE_DEAD);
@@ -314,22 +306,20 @@ public class Enemy extends Entity {
                 }
                 break;
         }
-        
+
         if (!player.isFreezeEnemies()) {
             float newX = getX() + stepx;
             float newY = getY() + stepy;
 
             if (!isCollision(newX, newY)) {
                 setLocation(newX, newY);
-            }
-            else if (!isCollision(newX, getY())) {
+            } else if (!isCollision(newX, getY())) {
                 setX(newX);
-            }
-            else if (!isCollision(getX(), newY)) {
+            } else if (!isCollision(getX(), newY)) {
                 setY(newY);
             }
         }
-        
+
         ticksRemaining--;
         ticks++;
         int textureIndex = STATE_TEXTURE[state];
@@ -338,12 +328,12 @@ public class Enemy extends Entity {
         }
         setTexture(textures[textureIndex]);
     }
-    
+
     private boolean isCollision(float x, float y) {
-        int minTileX = (int)(x - getRadius());
-        int maxTileX = (int)(x + getRadius());
-        int minTileY = (int)(y - getRadius());
-        int maxTileY = (int)(y + getRadius());
+        int minTileX = (int) (x - getRadius());
+        int maxTileX = (int) (x + getRadius());
+        int minTileY = (int) (y - getRadius());
+        int maxTileY = (int) (y + getRadius());
 
         for (int tileY = minTileY; tileY <= maxTileY; tileY++) {
             for (int tileX = minTileX; tileX <= maxTileX; tileX++) {

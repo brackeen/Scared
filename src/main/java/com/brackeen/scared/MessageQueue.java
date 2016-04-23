@@ -5,17 +5,17 @@ import java.util.Iterator;
 import java.util.List;
 
 public class MessageQueue {
-    
+
     private static class Message {
         final String text;
         int ticksRemaining;
-        
+
         public Message(String text) {
             this.text = text;
             ticksRemaining = 100;
         }
     }
-    
+
     private final List<Message> messages;
     private final int maxSize;
 
@@ -23,7 +23,7 @@ public class MessageQueue {
         maxSize = size;
         messages = new ArrayList<>();
     }
-    
+
     public void tick() {
         Iterator<Message> i = messages.iterator();
         while (i.hasNext()) {
@@ -34,24 +34,23 @@ public class MessageQueue {
             }
         }
     }
-    
+
     public int getMaxSize() {
         return maxSize;
     }
-    
+
     public int size() {
         return messages.size();
     }
-    
+
     public String get(int i) {
         if (i < size()) {
             return messages.get(i).text;
-        }
-        else {
+        } else {
             return null;
         }
     }
-    
+
     public void add(String text) {
         messages.add(new Message(text));
         while (messages.size() > maxSize) {

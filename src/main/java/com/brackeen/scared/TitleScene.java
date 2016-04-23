@@ -4,12 +4,13 @@ import com.brackeen.app.App;
 import com.brackeen.app.view.Button;
 import com.brackeen.app.view.ImageView;
 import com.brackeen.app.view.Scene;
+
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class TitleScene extends Scene {
-    
+
     private ImageView titleView;
     private Button startButton;
     private Button helpButton;
@@ -68,7 +69,7 @@ public class TitleScene extends Scene {
             }
         });
         addSubview(helpButton);
-        
+
         onResize();
 
         setKeyListener(new KeyListener() {

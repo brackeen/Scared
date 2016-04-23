@@ -4,9 +4,9 @@ import com.brackeen.scared.SoftTexture;
 import com.brackeen.scared.Tile;
 
 public class Entity implements Comparable<Entity> {
-    
+
     public static final int DEFAULT_PIXELS_PER_TILE = 64;
-    
+
     private Tile tile;
     private float radius;
     private float x;
@@ -17,7 +17,7 @@ public class Entity implements Comparable<Entity> {
     private float direction; // degrees
     private SoftTexture texture;
     private float textureScale = 1f / DEFAULT_PIXELS_PER_TILE;
-    
+
     public Entity(float radius, float x, float y) {
         setRadius(radius);
         setLocation(x, y);
@@ -62,7 +62,7 @@ public class Entity implements Comparable<Entity> {
     public void setRadius(float radius) {
         this.radius = radius;
     }
-    
+
     public float getX() {
         return x;
     }
@@ -70,7 +70,7 @@ public class Entity implements Comparable<Entity> {
     public float getY() {
         return y;
     }
-    
+
     public float getZ() {
         return z;
     }
@@ -86,7 +86,7 @@ public class Entity implements Comparable<Entity> {
     public void setZ(float z) {
         this.z = z;
     }
-    
+
     public void setLocation(float x, float y) {
         this.x = x;
         this.y = y;
@@ -99,23 +99,23 @@ public class Entity implements Comparable<Entity> {
     public void setDirection(float direction) {
         this.direction = direction;
     }
-    
+
     public void tick() {
-        
+
     }
-    
+
     public boolean isDeleted() {
         return deleted;
     }
-    
+
     public void delete() {
         deleted = true;
     }
-    
+
     public boolean onCollisionWithEntityShouldSlide() {
         return false;
     }
-    
+
     public boolean onCollisionWithWallShouldSlide() {
         return false;
     }
@@ -123,27 +123,25 @@ public class Entity implements Comparable<Entity> {
     public void notifyPlayerCollision(Player player) {
         // Do nothing
     }
-    
+
     /*
     Notify that a moving entity collided with this entity. 
     Returns true if the moving entity should stop.
     */
     public boolean notifyCollision(Entity movingEntity) {
         if (this instanceof Player) {
-            movingEntity.notifyPlayerCollision((Player)this);
-        }
-        else if (movingEntity instanceof Player) {
-            this.notifyPlayerCollision((Player)movingEntity);
+            movingEntity.notifyPlayerCollision((Player) this);
+        } else if (movingEntity instanceof Player) {
+            this.notifyPlayerCollision((Player) movingEntity);
         }
         return false;
     }
-    
+
     // Sort back-to-front
     public int compareTo(Entity t) {
         if (distanceFromCamera < t.distanceFromCamera) {
             return 1;
-        }
-        else if (distanceFromCamera > t.distanceFromCamera) {
+        } else if (distanceFromCamera > t.distanceFromCamera) {
             return -1;
         }
         return 0;

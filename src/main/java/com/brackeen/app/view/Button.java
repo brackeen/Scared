@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
 
 @SuppressWarnings("unused")
 public class Button extends View implements MouseListener {
-    
+
     public interface Listener {
         void buttonClicked(Button button);
     }
@@ -18,7 +18,7 @@ public class Button extends View implements MouseListener {
         HOVER,
         PRESSED,
     }
-    
+
     private BufferedImage normalImage;
     private BufferedImage hoverImage;
     private BufferedImage pressedImage;
@@ -30,21 +30,20 @@ public class Button extends View implements MouseListener {
     private boolean armed = false;
     private View rootWhenArmed;
     private Listener buttonListener;
-    
+
     public Button(BufferedImage normalImage) {
         setNormalImage(normalImage);
         setMouseListener(this);
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         sizeToFit();
     }
-    
+
     @Override
     public void sizeToFit() {
         BufferedImage image = getDisplayedImage();
         if (image == null) {
             setSize(0, 0);
-        }
-        else {
+        } else {
             setSize(image.getWidth(), image.getHeight());
         }
     }
@@ -56,11 +55,11 @@ public class Button extends View implements MouseListener {
     public void setButtonListener(Listener buttonListener) {
         this.buttonListener = buttonListener;
     }
-    
+
     private void setState(State state) {
         this.state = state;
     }
-    
+
     public BufferedImage getHoverImage() {
         return hoverImage;
     }
@@ -116,7 +115,7 @@ public class Button extends View implements MouseListener {
     public void setPressedSelectedImage(BufferedImage pressedSelectedImage) {
         this.pressedSelectedImage = pressedSelectedImage;
     }
-    
+
     private BufferedImage getDisplayedImage() {
         if (selected) {
             BufferedImage defaultImage = normalSelectedImage;
@@ -125,41 +124,32 @@ public class Button extends View implements MouseListener {
             }
             if (state == State.NORMAL) {
                 return defaultImage;
-            }
-            else if (state == State.HOVER) {
+            } else if (state == State.HOVER) {
                 if (hoverSelectedImage != null) {
                     return hoverSelectedImage;
-                }
-                else {
+                } else {
                     return defaultImage;
                 }
-            }
-            else {
+            } else {
                 if (pressedSelectedImage != null) {
                     return pressedSelectedImage;
-                }
-                else {
+                } else {
                     return defaultImage;
                 }
             }
-        }
-        else {
+        } else {
             if (state == State.NORMAL) {
                 return normalImage;
-            }
-            else if (state == State.HOVER) {
+            } else if (state == State.HOVER) {
                 if (hoverImage != null) {
                     return hoverImage;
-                }
-                else {
+                } else {
                     return normalImage;
                 }
-            }
-            else {
+            } else {
                 if (pressedImage != null) {
                     return pressedImage;
-                }
-                else {
+                } else {
                     return normalImage;
                 }
             }
@@ -175,8 +165,7 @@ public class Button extends View implements MouseListener {
     public void mouseEntered(MouseEvent me) {
         if (armed && me.getID() == MouseEvent.MOUSE_DRAGGED) {
             setState(State.PRESSED);
-        }
-        else if (me.getID() == MouseEvent.MOUSE_MOVED || me.getID() == MouseEvent.MOUSE_ENTERED) {
+        } else if (me.getID() == MouseEvent.MOUSE_MOVED || me.getID() == MouseEvent.MOUSE_ENTERED) {
             setState(State.HOVER);
         }
     }
@@ -208,8 +197,7 @@ public class Button extends View implements MouseListener {
 
         if (isOver) {
             setState(State.HOVER);
-        }
-        else {
+        } else {
             setState(State.NORMAL);
         }
         rootWhenArmed = null;
@@ -217,6 +205,6 @@ public class Button extends View implements MouseListener {
 
         if (isTap && buttonListener != null) {
             buttonListener.buttonClicked(this);
-        }    
+        }
     }
 }

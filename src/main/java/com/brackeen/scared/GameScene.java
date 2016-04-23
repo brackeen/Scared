@@ -12,6 +12,7 @@ import com.brackeen.scared.entity.BlastMark;
 import com.brackeen.scared.entity.Enemy;
 import com.brackeen.scared.entity.Entity;
 import com.brackeen.scared.entity.Key;
+
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -31,37 +32,37 @@ import java.util.HashMap;
 import java.util.List;
 
 public class GameScene extends Scene {
-    
+
     private static final boolean DEBUG_ALLOW_CAMERA_Z_CHANGES = Boolean.parseBoolean("true");
 
     public static final int NUM_LEVELS = 7;
-    
+
     private static final float MIN_RUN_VELOCITY = -0.055f;
     private static final float MAX_RUN_VELOCITY = 0.078f;
     private static final float MIN_STRAFE_VELOCITY = -0.055f;
     private static final float MAX_STRAFE_VELOCITY = 0.055f;
     private static final float MAX_TURN_VELOCITY = 360 / 128f;
     private static final float MIN_TURN_VELOCITY = -MAX_TURN_VELOCITY;
-    
+
     private static final float RUN_ACCEL = 0.0047f;
     private static final float RUN_DECEL = 0.0047f;
     private static final float STRAFE_ACCEL = 0.0039f;
     private static final float STRAFE_DECEL = 0.0039f;
     private static final float TURN_ACCEL = 360 / 680f;
     private static final float TURN_DECEL = 360 / 512f;
-    
+
     private static final int FIRE_COUNTDOWN = 15;
     private static final int GUN_BLAST_COUNTDOWN = 6;
-    
+
     private static final int ACTION_NONE = 0;
     private static final int ACTION_NEW_LEVEL = 1;
     private static final int ACTION_WIN = 2;
-    
+
     private static final int WARNING_BORDER_SIZE = 6;
     private static final int UI_SPACING = 4;
 
     private final HashMap<String, SoftTexture> textureCache = new HashMap<>();
-    
+
     private boolean keyLeft = false;
     private boolean keyRight = false;
     private boolean keyDown = false;
@@ -71,7 +72,7 @@ public class GameScene extends Scene {
     private boolean keyStrafeModifier = false;
     private boolean keyFire = false;
     private boolean mousePressed = false;
-       
+
     private SoftRender3D renderer;
     private Map map;
     private CollisionDetection collisionDetection;
@@ -79,17 +80,17 @@ public class GameScene extends Scene {
     private boolean hasWon;
     private boolean showCrosshair = true;
     private Stats stats = new Stats();
-    
+
     private float runVelocity = 0;
     private float strafeVelocity = 0;
     private float turnVelocity = 0;
-    
+
     private int ticksUntilRefire;
     private int nextAction = ACTION_NONE;
     private int nextActionTicksRemaining;
-    
+
     private final SoftTexture[] blastTextures = new SoftTexture[3];
-    
+
     // HUD
     private final MessageQueue messageQueue = new MessageQueue(4);
     private final Label[] messageLabels = new Label[4];
@@ -118,17 +119,17 @@ public class GameScene extends Scene {
     private View gameOverBackground;
     private View gameOverMessage;
     private ImageView crosshair;
-    
+
     @Override
     public void onLoad() {
         App app = App.getApp();
-        
+
         messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
         scoreFont1 = new BitmapFont(app.getImage("/ui/score_font1.png"), 19, '0');
         scoreFont2 = new BitmapFont(app.getImage("/ui/score_font2.png"), 19, '0');
         scoreFont1.setTracking(2);
         scoreFont2.setTracking(2);
-        
+
         // Cache textures
         // NOTE: Java has trouble with indexed PNG images with a pallete of less than 16 colors.
         // PNG optimizers create these. Images created from Photoshop or other major tools are fine.
@@ -141,40 +142,40 @@ public class GameScene extends Scene {
         blastTextures[0] = getTexture("/sprites/blast1.png", false);
         blastTextures[1] = getTexture("/sprites/blast2.png", false);
         blastTextures[2] = getTexture("/sprites/blast3.png", false);
-        
+
         for (int i = 0; i < Enemy.NUM_IMAGES; i++) {
             getTexture("/enemy/" + i + ".png", true);
         }
-        
+
         // All textures must be a size that is a power-of-two. 128x128, 64x64, etc.
         String[] textures = {
-            "door00.png",
-            "door01.png",
-            "door02.png",
-            "door03.png",
-            "exit00.png",
-            "exit01.png",
-            "generator00.png",
-            "generator01.png",
-            "wall00.png",
-            "wall01.png",
-            "wall02.png",
-            "wall03.png",
-            "wall04.png",
-            "wall05.png",
-            "wall06.png",
-            "wall07.png",
-            "wall08.png",
-            "wall09.png",
-            "wall10.png",
-            "wall11.png",
-            "wall12.png",
-            "wall13.png",
-            "wall14.png",
-            "wall15.png",
-            "window00.png",
+                "door00.png",
+                "door01.png",
+                "door02.png",
+                "door03.png",
+                "exit00.png",
+                "exit01.png",
+                "generator00.png",
+                "generator01.png",
+                "wall00.png",
+                "wall01.png",
+                "wall02.png",
+                "wall03.png",
+                "wall04.png",
+                "wall05.png",
+                "wall06.png",
+                "wall07.png",
+                "wall08.png",
+                "wall09.png",
+                "wall10.png",
+                "wall11.png",
+                "wall12.png",
+                "wall13.png",
+                "wall14.png",
+                "wall15.png",
+                "window00.png",
         };
-        int[] mipMapSizes = { 64, 32, 16 };
+        int[] mipMapSizes = {64, 32, 16};
         for (String textureName : textures) {
             SoftTexture texture = null;
             SoftTexture lastTexture = null;
@@ -183,24 +184,23 @@ public class GameScene extends Scene {
                 SoftTexture thisTexture = getTexture(fullname, false);
                 if (lastTexture == null) {
                     texture = thisTexture;
-                }
-                else {
+                } else {
                     lastTexture.setHalfSizeTexture(thisTexture);
                 }
                 lastTexture = thisTexture;
             }
             textureCache.put(textureName, texture);
         }
-                
+
         renderer = new SoftRender3D(textureCache, getWidth(), getHeight());
         //renderer.setPixelScale(2);
         addSubview(renderer);
-        
+
         // Crosshair
         crosshair = new ImageView(app.getImage("/hud/crosshair.png"));
         crosshair.setAnchor(0.5f, 0.5f);
         addSubview(crosshair);
-        
+
         // Gun
         gunBlastView = new ImageView(app.getImage("/hud/gun02.png"));
         gunBlastView.setVisible(false);
@@ -209,14 +209,14 @@ public class GameScene extends Scene {
         gunView = new ImageView(app.getImage("/hud/gun01.png"));
         gunView.setLocation(getWidth() / 2, getHeight());
         addSubview(gunView);
-        
+
         // Red warning splash
         warningSplash = new View();
         warningSplash.setVisible(false);
         addSubview(warningSplash);
-        
+
         float hudOpacity = 0.5f;
-        
+
         // Message queue
         float messageX = UI_SPACING;
         float messageY = UI_SPACING;
@@ -227,16 +227,16 @@ public class GameScene extends Scene {
             addSubview(messageLabels[i]);
             messageY += messageLabels[i].getHeight();
         }
-        
+
         // Keys
         for (int i = 0; i < Key.NUM_KEYS; i++) {
-            keys[i] = new ImageView(App.getApp().getImage("/sprites/key0" + (i+1) + ".png"));
+            keys[i] = new ImageView(App.getApp().getImage("/sprites/key0" + (i + 1) + ".png"));
             keys[i].setAnchor(1, 1);
             keys[i].setOpacity(hudOpacity);
             keys[i].setVisible(false);
             addSubview(keys[i]);
         }
-        
+
         // Health/ammo
         normalStats = new View();
         normalStats.setOpacity(hudOpacity);
@@ -246,7 +246,7 @@ public class GameScene extends Scene {
         healthHeaderLabel = new Label(messageFont, "HEALTH");
         healthHeaderLabel.setAnchor(0.5f, 1);
         normalStats.addSubview(healthHeaderLabel);
-        
+
         ammoLabel = new Label(scoreFont1, Integer.toString(Player.DEFAULT_AMMO));
         ammoLabel.setAnchor(0.5f, 1);
         normalStats.addSubview(ammoLabel);
@@ -254,7 +254,7 @@ public class GameScene extends Scene {
         ammoHeaderLabel.setAnchor(0.5f, 1);
         normalStats.addSubview(ammoHeaderLabel);
         addSubview(normalStats);
-        
+
         // Secrets/enemies
         specialStats = new View();
         specialStats.setOpacity(hudOpacity);
@@ -269,7 +269,7 @@ public class GameScene extends Scene {
         levelLabel.setAnchor(0, 1);
         specialStats.addSubview(levelLabel);
         addSubview(specialStats);
-        
+
         // FPS
         fpsLabel = new Label(messageFont, "0 fps");
         fpsLabel.setOpacity(hudOpacity);
@@ -282,23 +282,22 @@ public class GameScene extends Scene {
         focusLostLabel.setAnchor(0.5f, 0.5f);
         focusLostLabel.setVisible(false);
         addSubview(focusLostLabel);
-        
+
         onResize();
-        
+
         // Hide the cursor
         try {
             Toolkit toolkit = Toolkit.getDefaultToolkit();
             Dimension size = toolkit.getBestCursorSize(32, 32);
             if (size != null && size.width > 0 && size.height > 0) {
                 BufferedImage cursorImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
-                Cursor noCursor = toolkit.createCustomCursor(cursorImage, new Point(0,0), "none");
+                Cursor noCursor = toolkit.createCustomCursor(cursorImage, new Point(0, 0), "none");
                 setCursor(noCursor);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             // Ignore it
         }
-        
+
         setKeyListener(new KeyListener() {
 
             @Override
@@ -310,33 +309,26 @@ public class GameScene extends Scene {
             public void keyPressed(KeyEvent ke) {
                 if (ke.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     App.getApp().pushScene(new ConsoleScene(GameScene.this));
-                }
-                else if (ke.getKeyCode() == KeyEvent.VK_X) {
+                } else if (ke.getKeyCode() == KeyEvent.VK_X) {
                     if (map != null && map.getPlayer().isAlive()) {
                         showCrosshair = !showCrosshair;
                     }
-                }
-                else if (ke.getKeyCode() == KeyEvent.VK_R) {
+                } else if (ke.getKeyCode() == KeyEvent.VK_R) {
                     fpsLabel.setVisible(!fpsLabel.isVisible());
-                }
-                else if (ke.getKeyCode() == KeyEvent.VK_TAB || ke.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
+                } else if (ke.getKeyCode() == KeyEvent.VK_TAB || ke.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
                     specialStats.setVisible(true);
                     normalStats.setVisible(false);
                     ticksUntilHideSpecialStats = 60;
-                }
-                else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_PAGE_UP) {
+                } else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_PAGE_UP) {
                     Player player = map.getPlayer();
-                    player.setZ(Math.min(1-1/8f, player.getZ() + 1/128f));
-                }
-                else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
+                    player.setZ(Math.min(1 - 1 / 8f, player.getZ() + 1 / 128f));
+                } else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_PAGE_DOWN) {
                     Player player = map.getPlayer();
-                    player.setZ(Math.max(1/8f, player.getZ() - 1/128f));
-                }
-                else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_HOME) {
+                    player.setZ(Math.max(1 / 8f, player.getZ() - 1 / 128f));
+                } else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_HOME) {
                     Player player = map.getPlayer();
                     player.setZ(0.5f);
-                }
-                else {
+                } else {
                     keyDown(ke.getKeyCode(), true);
                 }
             }
@@ -352,7 +344,7 @@ public class GameScene extends Scene {
                     mousePressed = true;
                 }
             }
-            
+
             @Override
             public void mouseReleased(MouseEvent me) {
                 mousePressed = false;
@@ -378,13 +370,12 @@ public class GameScene extends Scene {
                 pos.y = Math.round(pos.y);
                 if (pos.x >= 0 && pos.x < getWidth() && pos.y >= 0 && pos.y < getHeight()) {
                     crosshair.setLocation(pos.x, pos.y);
-                }
-                else {
+                } else {
                     crosshair.setLocation(getWidth() / 2, getHeight() / 2);
                 }
             }
         });
-        
+
         setFocusListener(new FocusListener() {
 
             @Override
@@ -399,43 +390,43 @@ public class GameScene extends Scene {
                 paused = true;
             }
         });
-        
+
         setLevel(0);
     }
 
     @Override
     public void onResize() {
         renderer.setSize(getWidth(), getHeight());
-        
+
         // Warning splash
         warningSplash.removeAllSubviews();
         View view = new View(0, 0, getWidth(), WARNING_BORDER_SIZE);
         view.setBackgroundColor(Color.RED);
         warningSplash.addSubview(view);
-        view = new View(0, WARNING_BORDER_SIZE, WARNING_BORDER_SIZE, getHeight() - WARNING_BORDER_SIZE*2);
+        view = new View(0, WARNING_BORDER_SIZE, WARNING_BORDER_SIZE, getHeight() - WARNING_BORDER_SIZE * 2);
         view.setBackgroundColor(Color.RED);
         warningSplash.addSubview(view);
-        view = new View(getWidth() - WARNING_BORDER_SIZE, WARNING_BORDER_SIZE, WARNING_BORDER_SIZE, getHeight() - WARNING_BORDER_SIZE*2);
+        view = new View(getWidth() - WARNING_BORDER_SIZE, WARNING_BORDER_SIZE, WARNING_BORDER_SIZE, getHeight() - WARNING_BORDER_SIZE * 2);
         view.setBackgroundColor(Color.RED);
         warningSplash.addSubview(view);
         view = new View(0, getHeight() - WARNING_BORDER_SIZE, getWidth(), WARNING_BORDER_SIZE);
         view.setBackgroundColor(Color.RED);
         warningSplash.addSubview(view);
-        
+
         // Keys
         float keyX = getWidth() - UI_SPACING;
         float keyY = getHeight() - UI_SPACING;
         for (int i = 0; i < Key.NUM_KEYS; i++) {
-            keys[i].setLocation(keyX,  keyY);
+            keys[i].setLocation(keyX, keyY);
             keyX -= keys[i].getWidth() - UI_SPACING;
         }
 
         // Health/ammo
-        healthLabel.setLocation(UI_SPACING*4 + scoreFont1.getStringWidth("000")/2, getHeight() - UI_SPACING*2);
+        healthLabel.setLocation(UI_SPACING * 4 + scoreFont1.getStringWidth("000") / 2, getHeight() - UI_SPACING * 2);
         healthHeaderLabel.setLocation(healthLabel.getX(), healthLabel.getY() - healthLabel.getHeight() - UI_SPACING);
-        ammoLabel.setLocation(healthLabel.getX() + UI_SPACING*4 + scoreFont1.getStringWidth("000"), getHeight() - UI_SPACING*2);
+        ammoLabel.setLocation(healthLabel.getX() + UI_SPACING * 4 + scoreFont1.getStringWidth("000"), getHeight() - UI_SPACING * 2);
         ammoHeaderLabel.setLocation(ammoLabel.getX(), ammoLabel.getY() - ammoLabel.getHeight() - UI_SPACING);
-        
+
         // Secrets/level
         secretsLabel.setLocation(UI_SPACING * 2, getHeight() - UI_SPACING * 2);
         enemiesLabel.setLocation(UI_SPACING * 2, secretsLabel.getY() - UI_SPACING - secretsLabel.getHeight());
@@ -443,7 +434,7 @@ public class GameScene extends Scene {
 
         // FPS
         fpsLabel.setLocation(getWidth() - UI_SPACING, UI_SPACING);
-        
+
         // UI Labels
         focusLostLabel.setLocation(getWidth() / 2, getHeight() / 2);
         if (gameOverMessage != null) {
@@ -453,7 +444,7 @@ public class GameScene extends Scene {
             gameOverBackground.setSize(getWidth(), getHeight());
         }
     }
-    
+
     private SoftTexture getTexture(String name, boolean cache) {
         App app = App.getApp();
         BufferedImage image = app.getImage(name);
@@ -463,31 +454,30 @@ public class GameScene extends Scene {
         }
         return texture;
     }
-    
+
     private void setMessage(String message) {
         messageQueue.add(message);
     }
-    
+
     private void playSound(String soundName) {
         BufferedAudio audio = App.getApp().getAudio(soundName, 1);
         if (audio != null) {
             audio.play();
         }
     }
-    
+
     private void setLevel(int level) {
         this.level = level;
-        
+
         Player oldPlayer = null;
         if (map != null) {
             oldPlayer = map.getPlayer();
             map.unload();
         }
-        
+
         try {
             map = new Map(textureCache, messageQueue, "/maps/level" + level + ".txt", oldPlayer, stats);
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
             App.getApp().popScene();
             return;
@@ -495,16 +485,16 @@ public class GameScene extends Scene {
 
         collisionDetection = new CollisionDetection(map);
         renderer.setMap(map);
-        
+
         if (level != 0) {
             setMessage("LEVEL " + (level + 1));
         }
-        
+
         resetKeys();
         runVelocity = 0;
         strafeVelocity = 0;
         turnVelocity = 0;
-        
+
         hasWon = false;
         if (gameOverMessage != null) {
             gameOverMessage.removeFromSuperview();
@@ -514,28 +504,33 @@ public class GameScene extends Scene {
             gameOverBackground.removeFromSuperview();
             gameOverBackground = null;
         }
-        
+
         playSound("/sound/startlevel.wav");
     }
-    
+
     private void keyDown(int keyCode, boolean down) {
         switch (keyCode) {
-            case KeyEvent.VK_LEFT: case KeyEvent.VK_A:
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_A:
                 keyLeft = down;
                 break;
-            case KeyEvent.VK_RIGHT: case KeyEvent.VK_D:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_D:
                 keyRight = down;
                 break;
-            case KeyEvent.VK_UP: case KeyEvent.VK_W:
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_W:
                 keyUp = down;
                 break;
-            case KeyEvent.VK_DOWN: case KeyEvent.VK_S:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_S:
                 keyDown = down;
                 break;
-            case KeyEvent.VK_SPACE: case KeyEvent.VK_Z:
+            case KeyEvent.VK_SPACE:
+            case KeyEvent.VK_Z:
                 keyFire = down;
                 break;
-            case KeyEvent.VK_Q: 
+            case KeyEvent.VK_Q:
                 keyStrafeLeft = down;
                 break;
             case KeyEvent.VK_E:
@@ -546,12 +541,12 @@ public class GameScene extends Scene {
                 break;
         }
     }
-    
+
     public String doCommand(String command) {
         Player player = map.getPlayer();
-        
+
         if ("HELP".equalsIgnoreCase(command)) {
-            return  "stats    Show stats.\n" +
+            return "stats    Show stats.\n" +
                     "ammo     Give yourself some ammo.\n" +
                     "health   Give yourself a health kit.\n" +
                     "key x    Give yourself key x (from 1 to " + Key.NUM_KEYS + ").\n" +
@@ -560,36 +555,30 @@ public class GameScene extends Scene {
                     "cheat    Give yourself invincibility.\n" +
                     "debug    Show debug info.\n" +
                     "quit     Quit to main menu.\n";
-        }
-        else if ("QUIT".equalsIgnoreCase(command)) {
+        } else if ("QUIT".equalsIgnoreCase(command)) {
             App.getApp().popScene(); // Back to game
             App.getApp().popScene(); // Back to title
             return "Quitting...";
-        }
-        else if ("4 8 15 16 23 42".equalsIgnoreCase(command)) {
+        } else if ("4 8 15 16 23 42".equalsIgnoreCase(command)) {
             return "Timer reset to 108 minutes.";
-        }
-        else if ("STATS".equalsIgnoreCase(command)) {
+        } else if ("STATS".equalsIgnoreCase(command)) {
             return stats.getDescription(map, level + 1);
-        }
-        else if ("DEBUG".equalsIgnoreCase(command)) {
-            float dx = (float)Math.cos(Math.toRadians(player.getDirection()));
-            float dy = (float)Math.sin(Math.toRadians(player.getDirection()));
+        } else if ("DEBUG".equalsIgnoreCase(command)) {
+            float dx = (float) Math.cos(Math.toRadians(player.getDirection()));
+            float dy = (float) Math.sin(Math.toRadians(player.getDirection()));
             return
                     "location=" + player.getX() + "," + player.getY() + "\n" +
-                    "facing=" + dx + "," + dy + "\n" + 
-                    "actions=" + map.getNumActions() + "\n" +
-                    "entities=" + map.getNumEntities();
-        }
-        else if ("FREEZE".equalsIgnoreCase(command)) {
+                            "facing=" + dx + "," + dy + "\n" +
+                            "actions=" + map.getNumActions() + "\n" +
+                            "entities=" + map.getNumEntities();
+        } else if ("FREEZE".equalsIgnoreCase(command)) {
             player.setFreezeEnemies(!player.isFreezeEnemies());
             if (player.isFreezeEnemies()) {
                 stats.cheated = true;
                 playSound("/sound/nuclear_health.wav");
             }
             return "Freeze mode is now " + (player.isFreezeEnemies() ? "on" : "off");
-        }
-        else if ("CHEAT".equalsIgnoreCase(command)) {
+        } else if ("CHEAT".equalsIgnoreCase(command)) {
             player.setGodMode(!player.isGodMode());
             if (player.isGodMode()) {
                 stats.cheated = true;
@@ -598,25 +587,21 @@ public class GameScene extends Scene {
                 playSound("/sound/nuclear_health.wav");
             }
             return "Cheat mode is now " + (player.isGodMode() ? "on" : "off");
-        }
-        else if ("AMMO".equalsIgnoreCase(command)) {
+        } else if ("AMMO".equalsIgnoreCase(command)) {
             stats.cheated = true;
             player.setAmmo(Math.min(Player.MAX_AMMO, player.getAmmo() + 20));
             playSound("/sound/getammo.wav");
             return "You got some ammo";
-        }
-        else if ("HEALTH".equalsIgnoreCase(command)) {
+        } else if ("HEALTH".equalsIgnoreCase(command)) {
             stats.cheated = true;
             player.setHealth(Math.min(Player.MAX_HEALTH, player.getHealth() + 20));
             playSound("/sound/getammo.wav");
             return "You got a med kit";
-        }
-        else if (command != null && command.length() > 5 && "LEVEL".equalsIgnoreCase(command.substring(0, 5))) {
+        } else if (command != null && command.length() > 5 && "LEVEL".equalsIgnoreCase(command.substring(0, 5))) {
             int newLevel;
             try {
                 newLevel = Integer.parseInt(command.substring(5).trim()) - 1;
-            }
-            catch (NumberFormatException ex) {
+            } catch (NumberFormatException ex) {
                 newLevel = -1;
             }
 
@@ -624,17 +609,14 @@ public class GameScene extends Scene {
                 stats.cheated = true;
                 setLevel(newLevel);
                 return "Jump to level " + (newLevel + 1);
-            }
-            else {
+            } else {
                 return "Invalid level";
             }
-        }
-        else if (command != null && command.length() > 3 && "KEY".equalsIgnoreCase(command.substring(0, 3))) {
+        } else if (command != null && command.length() > 3 && "KEY".equalsIgnoreCase(command.substring(0, 3))) {
             int key;
             try {
                 key = Integer.parseInt(command.substring(3).trim());
-            }
-            catch (NumberFormatException ex) {
+            } catch (NumberFormatException ex) {
                 key = -1;
             }
 
@@ -643,12 +625,10 @@ public class GameScene extends Scene {
                 playSound("/sound/unlock.wav");
                 player.addKey(key);
                 return "You got key " + key;
-            }
-            else {
+            } else {
                 return "Invalid key";
             }
-        }
-        else {
+        } else {
             return "Unknown command";
         }
     }
@@ -656,32 +636,31 @@ public class GameScene extends Scene {
     @Override
     public void onTick() {
         crosshair.setVisible(showCrosshair && map.getPlayer().isAlive());
-        
+
         if (paused) {
             resetKeys();
             return;
         }
-        
+
         // Handle blocking actions
         if (nextAction != ACTION_NONE) {
             nextActionTicksRemaining--;
             if (nextActionTicksRemaining <= 0) {
-                
+
                 if (nextAction == ACTION_NEW_LEVEL) {
                     nextLevelAction();
-                }
-                else if (nextAction == ACTION_WIN) {
+                } else if (nextAction == ACTION_WIN) {
                     winAction();
                 }
-                
+
                 nextAction = ACTION_NONE;
             }
             return;
         }
-        
+
         // Move entities, handle actions
         map.tick();
-        
+
         // Move player
         tickPlayer();
         Player player = map.getPlayer();
@@ -689,13 +668,12 @@ public class GameScene extends Scene {
         if (map.isExitFound() && !hasWon) {
             if (level < NUM_LEVELS - 1) {
                 nextAction = ACTION_NEW_LEVEL;
-            }
-            else {
+            } else {
                 nextAction = ACTION_WIN;
             }
             nextActionTicksRemaining = 90;
         }
-        
+
         // Update the HUD
         warningSplash.setVisible(player.wasHitRecently());
         messageQueue.tick();
@@ -729,27 +707,26 @@ public class GameScene extends Scene {
             float displayWeaponOffset = crosshair.getX();
             displayWeaponOffset = Math.max(displayWeaponOffset, 60);
             displayWeaponOffset = Math.min(displayWeaponOffset, getWidth() - 180);
-            
+
             // Make the gun bob
             float v = Math.abs(runVelocity) + Math.abs(strafeVelocity);
             v = Math.min(v, MAX_RUN_VELOCITY);
             double angle = (System.currentTimeMillis() / 80.0) % (Math.PI * 2);
-            int bob = (int)Math.round(100 * v * Math.sin(angle));
-        
-            
+            int bob = (int) Math.round(100 * v * Math.sin(angle));
+
+
             float x = gunView.getWidth() / 2 + displayWeaponOffset;
             float y = Math.round(getHeight() + bob - gunView.getWidth() * 5 / 8);
-            
+
             if (gunBlastCountdown > 0) {
                 gunBlastCountdown--;
                 gunBlastView.setVisible(true);
                 x += 3;
-                y += 5;                
-            }
-            else {
+                y += 5;
+            } else {
                 gunBlastView.setVisible(false);
             }
-            
+
             float stepSize = Math.round(getWidth() / 64);
             float dx = x - gunView.getX();
             if (Math.abs(dx) > stepSize) {
@@ -758,12 +735,11 @@ public class GameScene extends Scene {
 
             gunBlastView.setLocation(x, y);
             gunView.setLocation(x, y);
-        }
-        else {
+        } else {
             gunBlastCountdown = 0;
         }
     }
-    
+
     private void resetKeys() {
         keyLeft = false;
         keyRight = false;
@@ -776,18 +752,18 @@ public class GameScene extends Scene {
         mousePressed = false;
         crosshair.setLocation(getWidth() / 2, getHeight() / 2);
     }
-    
+
     private void fire() {
         Player player = map.getPlayer();
         if (!player.isAlive()) {
             return;
         }
-        
+
         if (player.getAmmo() <= 0) {
             playSound("/sound/no_ammo.wav");
             return;
         }
-        
+
         stats.numShotsFired++;
         playSound("/sound/laser1.wav");
 
@@ -795,48 +771,47 @@ public class GameScene extends Scene {
             player.setAmmo(player.getAmmo() - 1);
         }
         gunBlastCountdown = GUN_BLAST_COUNTDOWN;
-        
-        int weaponAimX = (int)crosshair.getX();
+
+        int weaponAimX = (int) crosshair.getX();
         float aimAngle = renderer.getAngleAt(weaponAimX);
         aimAngle += Math.random() * 4 - 2; // +/- 2 degrees
-        
+
         Point2D.Float p = map.getWallCollision(player.getX(), player.getY(), aimAngle);
         if (p == null) {
             return;
         }
-        
+
         boolean hitSomething = false;
         List<Entity> hitEnemies = map.getCollisions(Enemy.class, player.getX(), player.getY(), p.x, p.y);
         if (hitEnemies.size() > 0) {
             for (Entity entity : hitEnemies) {
                 if (entity instanceof Enemy) {
-                    hitSomething |= ((Enemy)entity).hurt(6 + (int)(Math.random()*3)); //6..8
+                    hitSomething |= ((Enemy) entity).hurt(6 + (int) (Math.random() * 3)); //6..8
                 }
             }
         }
         if (hitSomething) {
             stats.numShotsFiredHit++;
-        }
-        else {
+        } else {
             // Miss - show the hit on the wall
             map.addEntity(new BlastMark(blastTextures, p.x, p.y, GUN_BLAST_COUNTDOWN * 3 / 2));
         }
     }
-    
+
     private void copyLevelStats() {
         stats.numSecretsFound += map.getPlayer().getSecrets();
         stats.totalSecrets += map.getNumSecrets();
         stats.numKills += map.getPlayer().getKills();
         stats.totalEnemies += map.getNumEnemies();
     }
-    
+
     private void nextLevelAction() {
         copyLevelStats();
         setLevel(level + 1);
     }
-    
+
     private void winAction() {
-        String statsDescription = stats.getDescription(map, level + 1); 
+        String statsDescription = stats.getDescription(map, level + 1);
         copyLevelStats();
         hasWon = true;
         mousePressed = false;
@@ -849,16 +824,16 @@ public class GameScene extends Scene {
             gameOverBackground.setBackgroundColor(new Color(0, 0, 0, 0.25f));
             addSubview(gameOverBackground);
         }
-        gameOverMessage = Label.makeMultilineLabel(messageFont, 
-            "YOU WIN. Click to play again.\n\n" + statsDescription, 0.5f);
+        gameOverMessage = Label.makeMultilineLabel(messageFont,
+                "YOU WIN. Click to play again.\n\n" + statsDescription, 0.5f);
         gameOverMessage.setLocation(getWidth() / 2, getHeight() / 2);
         gameOverMessage.setAnchor(0.5f, 0.5f);
         addSubview(gameOverMessage);
     }
-    
+
     private void tickPlayer() {
         Player player = map.getPlayer();
-        
+
         if (hasWon) {
             if (mousePressed) {
                 player.setHealth(Player.DEFAULT_HEALTH);
@@ -867,8 +842,7 @@ public class GameScene extends Scene {
                 setLevel(0);
             }
             return;
-        }
-        else if (!player.isAlive()) {
+        } else if (!player.isAlive()) {
             player.setZ(Math.max(player.getZ() - 0.008f, player.getRadius()));
             deathTicksRemaining--;
             if (deathTicksRemaining <= 0) {
@@ -887,13 +861,11 @@ public class GameScene extends Scene {
                     player.setAmmo(Player.DEFAULT_AMMO);
                     setLevel(level);
                 }
-            }
-            else {
+            } else {
                 mousePressed = false;
             }
             return;
-        }
-        else {
+        } else {
             deathTicksRemaining = 60;
         }
 
@@ -907,7 +879,7 @@ public class GameScene extends Scene {
         if (ticksUntilRefire > 0) {
             ticksUntilRefire--;
         }
-        
+
         // Move player
         boolean keyRun = false;
         boolean keyStrafe = false;
@@ -929,7 +901,7 @@ public class GameScene extends Scene {
                 runVelocity = MIN_RUN_VELOCITY;
             }
         }
-        
+
         if (keyStrafeLeft || (keyStrafeModifier && keyLeft)) {
             keyStrafe = true;
             strafeVelocity += STRAFE_ACCEL;
@@ -947,7 +919,7 @@ public class GameScene extends Scene {
                 turnVelocity = MAX_TURN_VELOCITY;
             }
         }
-        
+
         if (keyStrafeRight || (keyStrafeModifier && keyRight)) {
             keyStrafe = true;
             strafeVelocity -= STRAFE_ACCEL;
@@ -969,11 +941,9 @@ public class GameScene extends Scene {
         if (!keyRun && runVelocity != 0) {
             if (Math.abs(runVelocity) <= RUN_DECEL) {
                 runVelocity = 0;
-            }
-            else if (runVelocity < 0) {
+            } else if (runVelocity < 0) {
                 runVelocity += RUN_DECEL;
-            }
-            else {
+            } else {
                 runVelocity -= RUN_DECEL;
             }
         }
@@ -981,11 +951,9 @@ public class GameScene extends Scene {
         if (!keyStrafe && strafeVelocity != 0) {
             if (Math.abs(strafeVelocity) <= STRAFE_DECEL) {
                 strafeVelocity = 0;
-            }
-            else if (strafeVelocity < 0) {
+            } else if (strafeVelocity < 0) {
                 strafeVelocity += STRAFE_DECEL;
-            }
-            else {
+            } else {
                 strafeVelocity -= STRAFE_DECEL;
             }
         }
@@ -993,25 +961,23 @@ public class GameScene extends Scene {
         if (!keyTurn && turnVelocity != 0) {
             if (Math.abs(turnVelocity) <= TURN_DECEL) {
                 turnVelocity = 0;
-            }
-            else if (turnVelocity < 0) {
+            } else if (turnVelocity < 0) {
                 turnVelocity += TURN_DECEL;
-            }
-            else {
+            } else {
                 turnVelocity -= TURN_DECEL;
             }
         }
-        
+
         if (turnVelocity != 0) {
             player.setDirection((player.getDirection() + turnVelocity) % 360);
         }
-        
+
         float strafeDir = player.getDirection() + 90;
-        float cosPlayerDir = (float)Math.cos(Math.toRadians(player.getDirection()));
-        float sinPlayerDir = (float)Math.sin(Math.toRadians(player.getDirection()));
-        float cosPlayerStrafeDir = (float)Math.cos(Math.toRadians(strafeDir));
-        float sinPlayerStrafeDir = (float)Math.sin(Math.toRadians(strafeDir));
-            
+        float cosPlayerDir = (float) Math.cos(Math.toRadians(player.getDirection()));
+        float sinPlayerDir = (float) Math.sin(Math.toRadians(player.getDirection()));
+        float cosPlayerStrafeDir = (float) Math.cos(Math.toRadians(strafeDir));
+        float sinPlayerStrafeDir = (float) Math.sin(Math.toRadians(strafeDir));
+
         float dx = cosPlayerDir * runVelocity;
         float dy = -sinPlayerDir * runVelocity;
         dx += cosPlayerStrafeDir * strafeVelocity;
@@ -1020,7 +986,7 @@ public class GameScene extends Scene {
         if (dx == 0 && dy == 0) {
             return;
         }
-        
+
         collisionDetection.move(player, player.getX() + dx, player.getY() + dy, true, true);
     }
 }

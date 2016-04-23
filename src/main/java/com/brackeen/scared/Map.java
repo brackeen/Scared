@@ -11,6 +11,7 @@ import com.brackeen.scared.entity.Entity;
 import com.brackeen.scared.entity.Key;
 import com.brackeen.scared.entity.MedKit;
 import com.brackeen.scared.entity.Player;
+
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Map {
-    
+
     private int width;
     private int height;
 
@@ -41,10 +42,10 @@ public class Map {
 
     private int numSecrets = 0;
     private int numEnemies = 0;
-    
+
     public Map(HashMap<String, SoftTexture> textureCache, MessageQueue messageQueue, String mapName, Player oldPlayer, Stats stats) throws IOException {
         this.messageQueue = messageQueue;
-        
+
         SoftTexture[] enemyTextures = new SoftTexture[Enemy.NUM_IMAGES];
         for (int i = 0; i < Enemy.NUM_IMAGES; i++) {
             enemyTextures[i] = textureCache.get("/enemy/" + i + ".png");
@@ -53,7 +54,7 @@ public class Map {
         defaultFloorTexture = textureCache.get("wall00.png");
         generatorOnTexture = textureCache.get("generator01.png");
         exitButtonOnTexture = textureCache.get("exit01.png");
-        
+
         player = new Player(this);
         if (oldPlayer != null) {
             player.setHealth(Math.max(oldPlayer.getHealth(), player.getHealth()));
@@ -62,7 +63,7 @@ public class Map {
             player.setFreezeEnemies(oldPlayer.isFreezeEnemies());
         }
         addEntity(player);
-        
+
         InputStream stream = App.getResourceAsStream(mapName);
         if (stream == null) {
             throw new IOException("Not found: " + mapName);
@@ -203,27 +204,23 @@ public class Map {
 
                     if (tile.type == Tile.TYPE_GENERATOR) {
                         tile.setTexture(textureCache.get("generator00.png"));
-                    }
-                    else if (tile.type == Tile.TYPE_EXIT) {
+                    } else if (tile.type == Tile.TYPE_EXIT) {
                         tile.setTexture(textureCache.get("exit00.png"));
-                    }
-                    else {
+                    } else {
                         int textureIndex = Integer.parseInt(line.substring(x, x + 1), 16);
                         if (textureIndex < 10) {
                             tile.setTexture(textureCache.get("wall0" + textureIndex + ".png"));
-                        }
-                        else {
+                        } else {
                             tile.setTexture(textureCache.get("wall" + textureIndex + ".png"));
                         }
                     }
                 }
             }
-        }
-        catch (NumberFormatException ex) {
+        } catch (NumberFormatException ex) {
             throw new IOException(ex);
         }
     }
-    
+
     public void setMessage(String message) {
         messageQueue.add(message);
     }
@@ -235,11 +232,11 @@ public class Map {
     public void setDefaultFloorTexture(SoftTexture defaultFloorTexture) {
         this.defaultFloorTexture = defaultFloorTexture;
     }
-    
+
     public boolean isExitFound() {
         return exitFound;
     }
-    
+
     public void tick() {
         // Handle regular actions
         Iterator<Action> i = actions.iterator();
@@ -251,7 +248,7 @@ public class Map {
                 i.remove();
             }
         }
-         
+
         // Move entities
         Iterator<Entity> i2 = entities.iterator();
         while (i2.hasNext()) {
@@ -262,7 +259,7 @@ public class Map {
             }
         }
     }
-    
+
     private boolean tickEntity(Entity entity) {
         Tile oldTile = entity.getTile();
         entity.tick();
@@ -271,8 +268,7 @@ public class Map {
                 oldTile.removeEntity(entity);
             }
             return true;
-        }
-        else {
+        } else {
             Tile newTile = getTileAt(entity);
             if (oldTile != newTile) {
                 if (oldTile != null) {
@@ -285,26 +281,26 @@ public class Map {
             return false;
         }
     }
-    
+
     public void unload() {
         for (Action action : actions) {
             action.unload();
         }
     }
-    
+
     public int getNumActions() {
         return actions.size();
     }
-    
+
     public int getNumEntities() {
         return entities.size();
     }
 
     public void addEntity(Entity entity) {
         entities.add(entity);
-        
+
         Tile tile = getTileAt(entity);
-            
+
         if (tile != null) {
             tile.addEntity(entity);
         }
@@ -313,7 +309,7 @@ public class Map {
     public Player getPlayer() {
         return player;
     }
-    
+
     public boolean isElectricityOn() {
         return electricityOn;
     }
@@ -325,7 +321,7 @@ public class Map {
     public int getWidth() {
         return width;
     }
-    
+
     public int getHeight() {
         return height;
     }
@@ -337,19 +333,19 @@ public class Map {
     public int getNumSecrets() {
         return numSecrets;
     }
-    
+
     public Tile getTileAt(Entity entity) {
-        return getTileAt((int)entity.getX(), (int)entity.getY());
+        return getTileAt((int) entity.getX(), (int) entity.getY());
     }
 
     public Tile getTileAt(int x, int y) {
         if (x < 0 || y < 0 || x >= width || y >= height) {
             return null;
         }
-        
+
         return tiles[x][y];
     }
-    
+
     public boolean isSolidAt(int tileX, int tileY) {
         Tile tile = getTileAt(tileX, tileY);
         return (tile == null || tile.isSolid());
@@ -373,7 +369,7 @@ public class Map {
             }
         }
     }
-        
+
     private boolean isUnlockedDoor(int tileX, int tileY) {
         Tile tile = getTileAt(tileX, tileY);
         if (tile != null) {
@@ -383,47 +379,45 @@ public class Map {
         }
         return false;
     }
+
     private void activateDoor(int tileX, int tileY) {
         // Check to see if there already is a door action
         for (Action action : actions) {
             if (action instanceof DoorAction) {
-                DoorAction doorAction = (DoorAction)action;
-                
-                if (doorAction.getTileX() == tileX && 
-                    doorAction.getTileY() == tileY) 
-                {
+                DoorAction doorAction = (DoorAction) action;
+
+                if (doorAction.getTileX() == tileX &&
+                        doorAction.getTileY() == tileY) {
                     return;
                 }
             }
         }
         actions.add(new DoorAction(this, tileX, tileY));
     }
-    
+
     public void notifyPlayerTouchedNoWall() {
         lastCollidedWall = null;
     }
 
     public void notifyPlayerTouchedWall(Tile tile, int tileX, int tileY) {
-        if (tile.type == Tile.TYPE_MOVABLE_WALL) { 
+        if (tile.type == Tile.TYPE_MOVABLE_WALL) {
             if (tile.state == MovableWallAction.STATE_DONE) {
-                int dx = tileX - (int)player.getX();
-                int dy = tileY - (int)player.getY();
+                int dx = tileX - (int) player.getX();
+                int dy = tileY - (int) player.getY();
 
                 if ((dx == 0 && Math.abs(dy) == 1) || (dy == 0 && Math.abs(dx) == 1)) {
                     actions.add(new MovableWallAction(this, tileX, tileY));
                     player.setSecrets(player.getSecrets() + 1);
                 }
             }
-        }
-        else if (tile.type == Tile.TYPE_EXIT) { 
+        } else if (tile.type == Tile.TYPE_EXIT) {
             if (tile.state == 0) {
                 tile.state = 1;
                 tile.setTexture(exitButtonOnTexture);
                 App.getApp().getAudio("/sound/endlevel.wav", 1).play();
                 exitFound = true;
             }
-        }
-        else if (tile.type == Tile.TYPE_GENERATOR) { 
+        } else if (tile.type == Tile.TYPE_GENERATOR) {
             if (tile.state == 0) {
                 tile.state = 1;
                 tile.setTexture(generatorOnTexture);
@@ -431,38 +425,35 @@ public class Map {
                 setElectricityOn(true);
                 setMessage("The power is now on");
             }
-        }
-        else if (tile.type == Tile.TYPE_DOOR) {
+        } else if (tile.type == Tile.TYPE_DOOR) {
             if (tile != lastCollidedWall) {
                 lastCollidedWall = tile;
                 if (!electricityOn) {
                     setMessage("The power is off");
                     App.getApp().getAudio("/sound/no_ammo.wav", 1).play();
-                }
-                else if (!player.hasKey(tile.subtype)) {
+                } else if (!player.hasKey(tile.subtype)) {
                     setMessage("The door is locked");
                     App.getApp().getAudio("/sound/no_ammo.wav", 1).play();
                 }
             }
         }
     }
-    
-    public List<Entity> getCollisions(Class <? extends Entity> entityClass, 
-            float x1, float y1, float x2, float y2) {
+
+    public List<Entity> getCollisions(Class<? extends Entity> entityClass,
+                                      float x1, float y1, float x2, float y2) {
         List<Entity> hitEntities = new ArrayList<>();
-        
+
         float dx = x2 - x1;
         float dy = y2 - y1;
         float segmentLengthSq = dx * dx + dy * dy;
-        
+
         List<? extends Entity> entitiesToSearch;
         if (entityClass == Player.class) {
             entitiesToSearch = Collections.singletonList(player);
-        }
-        else {
+        } else {
             entitiesToSearch = entities;
         }
-        
+
         for (Entity entity : entitiesToSearch) {
             float radius = entity.getRadius();
             if (radius > 0 && entity.getClass().isAssignableFrom(entityClass)) {
@@ -473,7 +464,7 @@ public class Map {
                 dx = pointX - x1;
                 dy = pointY - y1;
 
-                float u = (dx * (x2 - x1) + dy * (y2 - y1) ) / segmentLengthSq;
+                float u = (dx * (x2 - x1) + dy * (y2 - y1)) / segmentLengthSq;
 
                 if (u < 0 || u > 1) {
                     // Not within the segment
@@ -496,80 +487,75 @@ public class Map {
     }
 
     public Point2D.Float getWallCollision(float x, float y, float angleInDegrees) {
-        int tileX = (int)x;
-        int tileY = (int)y;
-        
+        int tileX = (int) x;
+        int tileY = (int) y;
+
         if (isSolidAt(tileX, tileY)) {
             return null;
         }
-        
-        float dx = (float)Math.cos(Math.toRadians(angleInDegrees));
-        float dy = (float)Math.sin(Math.toRadians(angleInDegrees));
-        
+
+        float dx = (float) Math.cos(Math.toRadians(angleInDegrees));
+        float dy = (float) Math.sin(Math.toRadians(angleInDegrees));
+
         Point2D.Float p1 = getCollisionPart2(x, y, dx, dy, false);
         Point2D.Float p2 = getCollisionPart2(y, x, dy, dx, true);
-        
+
         if (p1 == null) {
             return p2;
-        }
-        else if (p2 == null) {
+        } else if (p2 == null) {
             return p1;
-        }
-        else {
+        } else {
             // Nearest collision
             float dx1 = p1.x - x;
             float dy1 = p1.y - y;
             float dx2 = p2.x - x;
             float dy2 = p2.y - y;
-            
+
             float d1Sq = dx1 * dx1 + dy1 * dy1;
             float d2Sq = dx2 * dx2 + dy2 * dy2;
-            
+
             if (d1Sq < d2Sq) {
                 return p1;
-            }
-            else {
+            } else {
                 return p2;
             }
         }
     }
-    
+
     private Point2D.Float getCollisionPart2(float x, float y, float dx, float dy, boolean inversed) {
         if (dx == 0) {
             return null;
         }
-        
+
         float fx;
         float fdx;
-        
+
         if (dx < 0) {
-            fx = (float)Math.floor(x) - 0.00001f;
+            fx = (float) Math.floor(x) - 0.00001f;
             fdx = -1;
-        }
-        else {
-            fx = (float)Math.ceil(x);
+        } else {
+            fx = (float) Math.ceil(x);
             fdx = 1;
         }
-        
+
         float fdy = dy / Math.abs(dx);
         float fy = y + Math.abs(fx - x) * fdy;
-        
+
         if (inversed) {
             return getCollisionPart3(fy, fx, fdy, fdx);
-        }
-        else {
+        } else {
             return getCollisionPart3(fx, fy, fdx, fdy);
         }
     }
-    
+
     private Point2D.Float getCollisionPart3(float x, float y, float dx, float dy) {
         while (true) {
-            int tileX = (int)x;
-            int tileY = (int)y;
+            int tileX = (int) x;
+            int tileY = (int) y;
             if (isSolidAt(tileX, tileY)) {
                 return new Point2D.Float(x, y);
             }
-            
+
             x += dx;
             y += dy;
         }

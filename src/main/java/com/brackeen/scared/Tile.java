@@ -1,13 +1,14 @@
 package com.brackeen.scared;
 
 import com.brackeen.scared.entity.Entity;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Tile {
-    
+
     public static final int RENDER_STATE_MAX = (1 << 16);
-    
+
     public static final int TYPE_NOTHING = 0;
     public static final int TYPE_WALL = 1;
     public static final int TYPE_DOOR = 2;  //(subtype: key #)
@@ -15,7 +16,7 @@ public class Tile {
     public static final int TYPE_GENERATOR = 4;
     public static final int TYPE_MOVABLE_WALL = 5;
     public static final int TYPE_EXIT = 6;
-    
+
     public int type;
     public int subtype;
     public int state;
@@ -23,21 +24,20 @@ public class Tile {
     public int renderVisible;
     private SoftTexture texture;
     private List<Entity> entities;
-    
+
     /* Checks if the tile is solid for collision purposes. */
     public boolean isSolid() {
         if (type == TYPE_DOOR) {
             return renderState < RENDER_STATE_MAX * 3 / 4;
-        }
-        else {
+        } else {
             return (type != TYPE_NOTHING);
         }
     }
-    
+
     public List<Entity> getEntities() {
         return entities;
     }
-    
+
     public boolean hasEntities() {
         return (entities != null && entities.size() > 0);
     }
@@ -52,7 +52,7 @@ public class Tile {
         }
         this.texture = texture;
     }
-    
+
     public void addEntity(Entity entity) {
         if (entity.getTile() != null) {
             entity.getTile().removeEntity(entity);
@@ -63,10 +63,10 @@ public class Tile {
         entities.add(entity);
         entity.setTile(this);
     }
-    
+
     public void removeEntity(Entity entity) {
         if (entity.getTile() == this) {
-            entity.setTile( null);
+            entity.setTile(null);
         }
         if (entities != null) {
             entities.remove(entity);

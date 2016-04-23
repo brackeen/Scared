@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 
 @SuppressWarnings("unused")
 public class BitmapFont {
-    
+
     private final BufferedImage image;
     private final int charWidth;
     private final int charHeight;
@@ -13,7 +13,7 @@ public class BitmapFont {
     private final int numChars;
     private final boolean hasLowercase;
     private int tracking = 0;
-    
+
     public BitmapFont(BufferedImage image, int charWidth, char firstChar) {
         this.image = image;
         this.charWidth = charWidth;
@@ -30,27 +30,26 @@ public class BitmapFont {
     public void setTracking(int tracking) {
         this.tracking = tracking;
     }
-    
+
     public int getStringWidth(String s) {
         if (s == null) {
             return 0;
-        }
-        else {
+        } else {
             return s.length() * charWidth + (s.length() - 1) * tracking;
         }
     }
-    
+
     public int getHeight() {
         return charHeight;
     }
-    
+
     public boolean canDisplay(char ch) {
         if (Character.isLowerCase(ch) && !hasLowercase) {
             ch = Character.toUpperCase(ch);
         }
         return (ch >= firstChar && ch < firstChar + numChars);
     }
-    
+
     public void drawString(Graphics2D g, String s) {
         if (s != null) {
             int x = 0;
@@ -62,8 +61,8 @@ public class BitmapFont {
                 }
                 if (ch >= firstChar && ch < firstChar + numChars) {
                     int charX = (ch - firstChar) * charWidth;
-                    g.drawImage(image, 
-                            x, y, x + charWidth, y + charHeight, 
+                    g.drawImage(image,
+                            x, y, x + charWidth, y + charHeight,
                             charX, 0, charX + charWidth, charHeight, null);
                 }
                 x += charWidth + tracking;

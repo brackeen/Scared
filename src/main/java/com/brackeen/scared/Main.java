@@ -6,9 +6,9 @@ import com.brackeen.app.view.Scene;
 import javax.swing.SwingUtilities;
 
 public class Main extends App {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -17,13 +17,13 @@ public class Main extends App {
             }
         });
     }
-    
+
     public Main() {
         setAppName("Scared");
         setAutoPixelScale(true);
         setAutoPixelScaleBaseSize(320, 240);
     }
-    
+
     @Override
     public Scene createFirstScene() {
         return new TitleScene();
