@@ -556,6 +556,7 @@ public class GameScene extends Scene {
                     "debug    Show debug info.\n" +
                     "quit     Quit to main menu.\n";
         } else if ("QUIT".equalsIgnoreCase(command)) {
+            map.unload();
             App.getApp().popScene(); // Back to game
             App.getApp().popScene(); // Back to title
             return "Quitting...";
