@@ -377,7 +377,7 @@ public class SoftRender3D extends View {
         long f_sinCameraAngle = f_sinTable[cameraAngle];
 
         int tx1 = mul(f_focalDistance, f_cameraZ);
-        int ty1 = (viewWidth / 2 - 1) * f_cameraZ;
+        int ty1 = (viewWidth / 2) * f_cameraZ;
         long txStart = tx1 * f_cosCameraAngle + ty1 * f_sinCameraAngle;
         long tyStart = -tx1 * f_sinCameraAngle + ty1 * f_cosCameraAngle;
         long tIncStartSin = -f_cameraZ * f_sinCameraAngle;

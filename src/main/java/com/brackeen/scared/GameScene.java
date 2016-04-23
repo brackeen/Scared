@@ -33,7 +33,7 @@ import java.util.List;
 
 public class GameScene extends Scene {
 
-    private static final boolean DEBUG_ALLOW_CAMERA_Z_CHANGES = Boolean.parseBoolean("true");
+    private static final boolean DEBUG_ALLOW_CAMERA_Z_CHANGES = Boolean.parseBoolean("false");
 
     public static final int NUM_LEVELS = 7;
 
@@ -546,7 +546,7 @@ public class GameScene extends Scene {
         Player player = map.getPlayer();
 
         if ("HELP".equalsIgnoreCase(command)) {
-            return "stats    Show stats.\n" +
+            return ("stats    Show stats.\n" +
                     "ammo     Give yourself some ammo.\n" +
                     "health   Give yourself a health kit.\n" +
                     "key x    Give yourself key x (from 1 to " + Key.NUM_KEYS + ").\n" +
@@ -554,7 +554,7 @@ public class GameScene extends Scene {
                     "freeze   Freeze all enemies in place.\n" +
                     "cheat    Give yourself invincibility.\n" +
                     "debug    Show debug info.\n" +
-                    "quit     Quit to main menu.\n";
+                    "quit     Quit to main menu.\n");
         } else if ("QUIT".equalsIgnoreCase(command)) {
             map.unload();
             App.getApp().popScene(); // Back to game
@@ -567,11 +567,11 @@ public class GameScene extends Scene {
         } else if ("DEBUG".equalsIgnoreCase(command)) {
             float dx = (float) Math.cos(Math.toRadians(player.getDirection()));
             float dy = (float) Math.sin(Math.toRadians(player.getDirection()));
-            return
-                    "location=" + player.getX() + "," + player.getY() + "\n" +
-                            "facing=" + dx + "," + dy + "\n" +
-                            "actions=" + map.getNumActions() + "\n" +
-                            "entities=" + map.getNumEntities();
+            return ("location=" + player.getX() + "," + player.getY() + "\n" +
+                    "facing=" + dx + "," + dy + "\n" +
+                    "angle=" + String.format("%.2f", player.getDirection()) + "\n" +
+                    "actions=" + map.getNumActions() + "\n" +
+                    "entities=" + map.getNumEntities());
         } else if ("FREEZE".equalsIgnoreCase(command)) {
             player.setFreezeEnemies(!player.isFreezeEnemies());
             if (player.isFreezeEnemies()) {
