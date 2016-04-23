@@ -714,7 +714,6 @@ public class GameScene extends Scene {
             double angle = (System.currentTimeMillis() / 80.0) % (Math.PI * 2);
             int bob = (int) Math.round(100 * v * Math.sin(angle));
 
-
             float x = gunView.getWidth() / 2 + displayWeaponOffset;
             float y = Math.round(getHeight() + bob - gunView.getWidth() * 5 / 8);
 
@@ -736,6 +735,7 @@ public class GameScene extends Scene {
             gunBlastView.setLocation(x, y);
             gunView.setLocation(x, y);
         } else {
+            gunBlastView.setVisible(false);
             gunBlastCountdown = 0;
         }
     }
