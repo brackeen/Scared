@@ -42,6 +42,7 @@ import java.util.Stack;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
@@ -93,6 +94,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         }
     }
 
+    private JFrame frame;
     private String appName = "App";
     private final float frameRate = 60;
     private final Timer timer = new Timer(1, new ActionListener() {
@@ -181,7 +183,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
 
     protected void initFrame(int width, int height) {
         // Create frame
-        final JFrame frame = new JFrame(appName);
+        frame = new JFrame(appName);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         enableOSXFullscreen(frame);
 
@@ -222,6 +224,23 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                 IllegalArgumentException | InvocationTargetException | ClassNotFoundException ex) {
             // Ignore
+        }
+    }
+
+    public synchronized boolean dispose() {
+        if (frame != null) {
+            final JFrame thisFrame = frame;
+            frame = null;
+            stop();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    thisFrame.dispose();
+                }
+            });
+            return true;
+        } else {
+            return false;
         }
     }
 

@@ -554,7 +554,10 @@ public class GameScene extends Scene {
                     "freeze   Freeze all enemies in place.\n" +
                     "cheat    Give yourself invincibility.\n" +
                     "debug    Show debug info.\n" +
-                    "quit     Quit to main menu.\n");
+                    "quit     Quit to main menu.\n" +
+                    "exit     Exit game.");
+        } else if ("EXIT".equalsIgnoreCase(command) && App.getApp().dispose()) {
+            return "Exiting...";
         } else if ("QUIT".equalsIgnoreCase(command)) {
             map.unload();
             App.getApp().popScene(); // Back to game
