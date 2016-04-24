@@ -19,8 +19,12 @@ public class TitleScene extends Scene {
     public void onLoad() {
         App app = App.getApp();
 
-        App.log("Scared Console");
-        App.log("Type \"HELP\" for commands");
+        String version = getClass().getPackage().getImplementationVersion();
+        if (version == null) {
+            version = "";
+        }
+
+        App.log("Scared " + version);
 
         // Preload audio.
         // Number of loaded audio buffers must be 32 or less, due to a Java Sound limitation.

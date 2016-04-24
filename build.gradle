@@ -1,7 +1,7 @@
 apply plugin: 'java'
 
 group = 'com.brackeen'
-version = '1.8.1'
+version = '1.9.0'
 
 description = 'Scared'
 
@@ -14,6 +14,8 @@ repositories {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.brackeen.scared.Main'
+        attributes('Main-Class': 'com.brackeen.scared.Main',
+                   'Implementation-Title': 'Scared',
+                   'Implementation-Version': version)
     }
 }
