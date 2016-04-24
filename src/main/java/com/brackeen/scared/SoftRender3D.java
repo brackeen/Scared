@@ -49,7 +49,7 @@ public class SoftRender3D extends View {
     }
 
     private static int radiansToAngle(double radians) {
-        return ((int) Math.round(radians * NUM_DEGREES / (2 * Math.PI))) & NUM_DEGREES_MASK;
+        return ((int) Math.floor(radians * NUM_DEGREES / (2 * Math.PI))) & NUM_DEGREES_MASK;
     }
 
     private static double angleToRadians(int angle) {
@@ -515,7 +515,7 @@ public class SoftRender3D extends View {
 
     private int drawTextureSliver(SoftTexture srcTexture, boolean srcOpaque, int f_sliver, int depth,
                                   final int dstX, final int f_dstY1, final int f_dstY2) {
-        int dstY = toIntFloor(f_dstY1);
+        int dstY = toIntCeil(f_dstY1);
         int dstHeight = toIntCeil(f_dstY2) - dstY;
 
         // Mip-mapping. Use half-size textures if available
@@ -549,13 +549,13 @@ public class SoftRender3D extends View {
             f_srcMidY = (f_srcMidY + 128) & ~0xff; // Round to nearest 1/256th
 
             int renderY1 = renderY;
-            int renderY2 = dstViewMidY;
+            int renderY2 = Math.min(dstViewMidY, renderY + renderHeight);
             int f_dy = 0;
             int f_y = 0;
 
             if (renderY2 > renderY1) {
                 f_dy = div(f_srcMidY, toFixedPoint(dstViewMidY) - f_dstY1);
-                f_y = f_srcMidY - f_dy * (renderY2 - renderY1 - 1);
+                f_y = f_srcMidY - f_dy * (dstViewMidY - renderY1);
             }
 
             // Render in two passes - top portion, then bottom portion. f_dy might be is different each time.
