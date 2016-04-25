@@ -13,7 +13,7 @@ public class Main extends App {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 Main main = new Main();
-                main.initFrame(960, 600);
+                main.initFrame(640, 480);
             }
         });
     }

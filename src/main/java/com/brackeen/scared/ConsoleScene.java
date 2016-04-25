@@ -16,7 +16,7 @@ import java.util.List;
 public class ConsoleScene extends Scene {
 
     private static final int CURSOR_BLINK_TICKS = 20;
-    private static final int BORDER_SIZE = 10;
+    private static final int BORDER_SIZE = 0;
     private static final int MAX_COMMAND_HISTORY = 200;
     private static final String PROMPT = "] ";
 
@@ -42,7 +42,8 @@ public class ConsoleScene extends Scene {
 
         commandHistoryIndex = commandHistory.size();
 
-        messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
+        messageFont = new BitmapFont(app.getImage("/ui/console_font.png"), 8, ' ');
+        messageFont.setTracking(-2);
 
         setBackgroundColor(new Color(12, 12, 12));
 

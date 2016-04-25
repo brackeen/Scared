@@ -95,8 +95,7 @@ public class GameScene extends Scene {
     private final MessageQueue messageQueue = new MessageQueue(4);
     private final Label[] messageLabels = new Label[4];
     private BitmapFont messageFont;
-    private BitmapFont scoreFont1;
-    private BitmapFont scoreFont2;
+    private BitmapFont scoreFont;
     private Label focusLostLabel;
     private boolean paused;
     private final ImageView[] keys = new ImageView[Key.NUM_KEYS];
@@ -124,11 +123,9 @@ public class GameScene extends Scene {
     public void onLoad() {
         App app = App.getApp();
 
-        messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 11, ' ');
-        scoreFont1 = new BitmapFont(app.getImage("/ui/score_font1.png"), 19, '0');
-        scoreFont2 = new BitmapFont(app.getImage("/ui/score_font2.png"), 19, '0');
-        scoreFont1.setTracking(2);
-        scoreFont2.setTracking(2);
+        messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 8, ' ');
+        scoreFont = new BitmapFont(app.getImage("/ui/score_font.png"), 12, '0');
+        scoreFont.setTracking(0);
 
         // Cache textures
         // NOTE: Java has trouble with indexed PNG images with a pallete of less than 16 colors.
@@ -215,7 +212,7 @@ public class GameScene extends Scene {
         warningSplash.setVisible(false);
         addSubview(warningSplash);
 
-        float hudOpacity = 0.5f;
+        float hudOpacity = 1.0f;
 
         // Message queue
         float messageX = UI_SPACING;
@@ -240,14 +237,14 @@ public class GameScene extends Scene {
         // Health/ammo
         normalStats = new View();
         normalStats.setOpacity(hudOpacity);
-        healthLabel = new Label(scoreFont1, Integer.toString(Player.DEFAULT_HEALTH));
+        healthLabel = new Label(scoreFont, Integer.toString(Player.DEFAULT_HEALTH));
         healthLabel.setAnchor(0.5f, 1);
         normalStats.addSubview(healthLabel);
         healthHeaderLabel = new Label(messageFont, "HEALTH");
         healthHeaderLabel.setAnchor(0.5f, 1);
         normalStats.addSubview(healthHeaderLabel);
 
-        ammoLabel = new Label(scoreFont1, Integer.toString(Player.DEFAULT_AMMO));
+        ammoLabel = new Label(scoreFont, Integer.toString(Player.DEFAULT_AMMO));
         ammoLabel.setAnchor(0.5f, 1);
         normalStats.addSubview(ammoLabel);
         ammoHeaderLabel = new Label(messageFont, "AMMO");
@@ -422,9 +419,9 @@ public class GameScene extends Scene {
         }
 
         // Health/ammo
-        healthLabel.setLocation(UI_SPACING * 4 + scoreFont1.getStringWidth("000") / 2, getHeight() - UI_SPACING * 2);
+        healthLabel.setLocation(UI_SPACING * 4 + scoreFont.getStringWidth("000") / 2, getHeight() - UI_SPACING * 2);
         healthHeaderLabel.setLocation(healthLabel.getX(), healthLabel.getY() - healthLabel.getHeight() - UI_SPACING);
-        ammoLabel.setLocation(healthLabel.getX() + UI_SPACING * 4 + scoreFont1.getStringWidth("000"), getHeight() - UI_SPACING * 2);
+        ammoLabel.setLocation(healthLabel.getX() + UI_SPACING * 4 + scoreFont.getStringWidth("000"), getHeight() - UI_SPACING * 2);
         ammoHeaderLabel.setLocation(ammoLabel.getX(), ammoLabel.getY() - ammoLabel.getHeight() - UI_SPACING);
 
         // Secrets/level
