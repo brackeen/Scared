@@ -411,23 +411,23 @@ public class GameScene extends Scene {
         warningSplash.addSubview(view);
 
         // Keys
-        float keyX = getWidth() - UI_SPACING;
+        float keyX = getWidth() + UI_SPACING - 1;
         float keyY = getHeight() - UI_SPACING;
         for (int i = 0; i < Key.NUM_KEYS; i++) {
             keys[i].setLocation(keyX, keyY);
-            keyX -= keys[i].getWidth() - UI_SPACING;
+            keyX -= keys[i].getWidth() / 2 + UI_SPACING + 1;
         }
 
         // Health/ammo
-        healthLabel.setLocation(UI_SPACING * 4 + scoreFont.getStringWidth("000") / 2, getHeight() - UI_SPACING * 2);
+        healthLabel.setLocation(UI_SPACING * 3 + scoreFont.getStringWidth("000") / 2, getHeight() - UI_SPACING);
         healthHeaderLabel.setLocation(healthLabel.getX(), healthLabel.getY() - healthLabel.getHeight() - UI_SPACING);
-        ammoLabel.setLocation(healthLabel.getX() + UI_SPACING * 4 + scoreFont.getStringWidth("000"), getHeight() - UI_SPACING * 2);
+        ammoLabel.setLocation(healthLabel.getX() + UI_SPACING * 4 + scoreFont.getStringWidth("000"), getHeight() - UI_SPACING);
         ammoHeaderLabel.setLocation(ammoLabel.getX(), ammoLabel.getY() - ammoLabel.getHeight() - UI_SPACING);
 
         // Secrets/level
-        secretsLabel.setLocation(UI_SPACING * 2, getHeight() - UI_SPACING * 2);
-        enemiesLabel.setLocation(UI_SPACING * 2, secretsLabel.getY() - UI_SPACING - secretsLabel.getHeight());
-        levelLabel.setLocation(UI_SPACING * 2, enemiesLabel.getY() - UI_SPACING - enemiesLabel.getHeight());
+        secretsLabel.setLocation(UI_SPACING * 3 / 2, getHeight() - UI_SPACING);
+        enemiesLabel.setLocation(UI_SPACING * 3 / 2, secretsLabel.getY() - UI_SPACING - secretsLabel.getHeight());
+        levelLabel.setLocation(UI_SPACING * 3 / 2, enemiesLabel.getY() - UI_SPACING - enemiesLabel.getHeight());
 
         // FPS
         fpsLabel.setLocation(getWidth() - UI_SPACING, UI_SPACING);
