@@ -17,6 +17,12 @@ import java.awt.image.WritableRaster;
  */
 public class SoftTexture {
 
+    public enum DownscaleType {
+        AVERAGE,
+        WEIGHTED_EVEN,
+        WEIGHTED_ODD,
+    }
+
     private static int[] getImageData(BufferedImage image) {
         int w = image.getWidth();
         int h = image.getHeight();
@@ -124,6 +130,68 @@ public class SoftTexture {
         return new BufferedImage(colorModel, raster, true, null);
     }
 
+    public void createHalfSizeTexture(DownscaleType downscaleType) {
+        if (sizeBits > 0) {
+            halfSizeTexture = new SoftTexture(width/2, height/2);
+            int srcOffset = 0;
+            int dstOffset = 0;
+            for (int y = 0; y < width; y += 2) {
+                switch (downscaleType) {
+                    case AVERAGE:
+                        for (int x = 0; x < height; x += 2) {
+                            int c1 = data[srcOffset];
+                            int c2 = data[srcOffset + 1];
+                            int c3 = data[srcOffset + width];
+                            int c4 = data[srcOffset + width + 1];
+
+                            int a = ((c1 >>> 24) + (c2 >>> 24) + (c3 >>> 24) + (c4 >>> 24)) >> 2;
+                            int r = (((c1 >> 16) & 0xff) + ((c2 >> 16) & 0xff) + ((c3 >> 16) & 0xff) + ((c4 >> 16) & 0xff)) >> 2;
+                            int g = (((c1 >> 8) & 0xff) + ((c2 >> 8) & 0xff) + ((c3 >> 8) & 0xff) + ((c4 >> 8) & 0xff)) >> 2;
+                            int b = ((c1 & 0xff) + (c2 & 0xff) + (c3 & 0xff) + (c4 & 0xff)) >> 2;
+
+                            halfSizeTexture.data[dstOffset++] = (a << 24) | (r << 16) | (g << 8) | b;
+                            srcOffset+=2;
+                        }
+                        break;
+                    case WEIGHTED_EVEN:
+                        for (int x = 0; x < height; x += 2) {
+                            int c1 = data[srcOffset];
+                            int c2 = data[srcOffset + 1];
+                            int c3 = data[srcOffset + width];
+                            int c4 = data[srcOffset + width + 1];
+
+                            int a = ((c1 >>> 24)*5 + (c2 >>> 24) + (c3 >>> 24) + (c4 >>> 24)) >> 3;
+                            int r = (((c1 >> 16) & 0xff)*5 + ((c2 >> 16) & 0xff) + ((c3 >> 16) & 0xff) + ((c4 >> 16) & 0xff)) >> 3;
+                            int g = (((c1 >> 8) & 0xff)*5 + ((c2 >> 8) & 0xff) + ((c3 >> 8) & 0xff) + ((c4 >> 8) & 0xff)) >> 3;
+                            int b = ((c1 & 0xff)*5 + (c2 & 0xff) + (c3 & 0xff) + (c4 & 0xff)) >> 3;
+
+                            halfSizeTexture.data[dstOffset++] = (a << 24) | (r << 16) | (g << 8) | b;
+                            srcOffset+=2;
+                        }
+                        break;
+                    case WEIGHTED_ODD:
+                        for (int x = 0; x < height; x += 2) {
+                            int c1 = data[srcOffset];
+                            int c2 = data[srcOffset + 1];
+                            int c3 = data[srcOffset + width];
+                            int c4 = data[srcOffset + width + 1];
+
+                            int a = ((c1 >>> 24) + (c2 >>> 24) + (c3 >>> 24) + (c4 >>> 24)*5) >> 3;
+                            int r = (((c1 >> 16) & 0xff) + ((c2 >> 16) & 0xff) + ((c3 >> 16) & 0xff) + ((c4 >> 16) & 0xff)*5) >> 3;
+                            int g = (((c1 >> 8) & 0xff) + ((c2 >> 8) & 0xff) + ((c3 >> 8) & 0xff) + ((c4 >> 8) & 0xff)*5) >> 3;
+                            int b = ((c1 & 0xff) + (c2 & 0xff) + (c3 & 0xff) + (c4 & 0xff)*5) >> 3;
+
+                            halfSizeTexture.data[dstOffset++] = (a << 24) | (r << 16) | (g << 8) | b;
+                            srcOffset+=2;
+                        }
+                        break;
+                }
+
+                srcOffset += width;
+            }
+        }
+    }
+
     /**
      * Draws the specified texture (source) onto this texture (dest).
      */
@@ -135,7 +203,6 @@ public class SoftTexture {
      * Draws the specified texture (source) onto this texture (dest).
      */
     public void draw(SoftTexture src, int x, int y, int srcX, int srcY, int srcWidth, int srcHeight, boolean srcOpaque) {
-
         SoftTexture dest = this;
         int destX = x;
         int destY = y;
@@ -169,7 +236,6 @@ public class SoftTexture {
         int destOffset = destX + destY * dest.width;
 
         for (int i = 0; i < srcHeight; i++) {
-
             if (srcOpaque) {
                 System.arraycopy(srcData, srcOffset, destData, destOffset, srcWidth);
             } else {
@@ -180,7 +246,6 @@ public class SoftTexture {
                         destData[destOffset + j] = color;
                     }
                 }
-
             }
 
             srcOffset += src.width;

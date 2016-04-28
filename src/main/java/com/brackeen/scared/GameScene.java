@@ -128,7 +128,7 @@ public class GameScene extends Scene {
         scoreFont.setTracking(0);
 
         // Cache textures
-        // NOTE: Java has trouble with indexed PNG images with a pallete of less than 16 colors.
+        // NOTE: Java has trouble with indexed PNG images with a palette of less than 16 colors.
         // PNG optimizers create these. Images created from Photoshop or other major tools are fine.
         getTexture("/sprites/key01.png", true);
         getTexture("/sprites/key02.png", true);
@@ -172,21 +172,28 @@ public class GameScene extends Scene {
                 "wall15.png",
                 "window00.png",
         };
-        int[] mipMapSizes = {64, 32, 16};
+
+        // Create mip-maps
+        final int mipMapCount = 3;
         for (String textureName : textures) {
-            SoftTexture texture = null;
-            SoftTexture lastTexture = null;
-            for (int size : mipMapSizes) {
-                String fullname = "/texture" + size + "/" + textureName;
-                SoftTexture thisTexture = getTexture(fullname, false);
-                if (lastTexture == null) {
-                    texture = thisTexture;
-                } else {
-                    lastTexture.setHalfSizeTexture(thisTexture);
-                }
-                lastTexture = thisTexture;
-            }
+            String fullname = "/textures/" + textureName;
+            SoftTexture texture = getTexture(fullname, false);
             textureCache.put(textureName, texture);
+
+            SoftTexture.DownscaleType downscaleType = SoftTexture.DownscaleType.WEIGHTED_EVEN;
+            // Hack: Sharpen on odd pixels on these two textures to make their highlights look better
+            if ("wall01.png".equals(textureName) || "wall06.png".equals(textureName)) {
+                downscaleType = SoftTexture.DownscaleType.WEIGHTED_ODD;
+            }
+
+            for (int i = 0; i < mipMapCount; i++) {
+                texture.createHalfSizeTexture(downscaleType);
+                texture = texture.getHalfSizeTexture();
+                if (texture == null) {
+                    break;
+                }
+                downscaleType = SoftTexture.DownscaleType.AVERAGE;
+            }
         }
 
         renderer = new SoftRender3D(textureCache, getWidth(), getHeight());
