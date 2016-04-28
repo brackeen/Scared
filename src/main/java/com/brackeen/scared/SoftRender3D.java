@@ -38,6 +38,7 @@ public class SoftRender3D extends View {
     private static final int ANGLE_0 = 0;
 
     private static final int DEPTH_SCALE = 48;
+    private static final int DEPTH_MAX = 768;
 
     private static final int MIN_FOV = 30;
     private static final int MAX_FOV = 120;
@@ -344,7 +345,7 @@ public class SoftRender3D extends View {
                 int f_wallBottom = f_dstMidY + mulDiv(f_cameraZ, f_focalDistance, ray.f_dist);
                 int f_wallTop = f_dstMidY - mulDiv(ONE - f_cameraZ, f_focalDistance, ray.f_dist);
                 if (f_wallBottom > f_wallTop) {
-                    int depth = drawDepthShading ? toIntFloor(ray.f_dist * DEPTH_SCALE) : 0;
+                    int depth = drawDepthShading ? Math.min(DEPTH_MAX, toIntFloor(ray.f_dist * DEPTH_SCALE)) : 0;
                     ray.floorDrawY = drawTextureSliver(ray.texture, true, ray.sliver, depth,
                             dstWidth - x - 1, f_wallTop, f_wallBottom);
                 }
@@ -417,7 +418,8 @@ public class SoftRender3D extends View {
             ty += startX * tyInc;
 
             int f_dist = (int) (((long) f_cameraZ * f_focalDistance / row) >> FRACTION_BITS);
-            int depth = drawDepthShading ? toIntFloor(f_dist * DEPTH_SCALE) : 0;
+            int depth = drawDepthShading ? Math.min(DEPTH_MAX, toIntFloor(f_dist * DEPTH_SCALE)) : 0;
+            int size = toIntFloor(div(f_focalDistance, f_dist));
 
             for (int x = startX; x < endX; x++) {
                 if (currentY >= rays[x].floorDrawY) {
@@ -426,14 +428,19 @@ public class SoftRender3D extends View {
 
                     if (mapX != lastMapX || mapY != lastMapY) {
                         Tile tile = map.getTileAt(mapX, mapY);
-
+                        SoftTexture texture;
                         if (tile == null || tile.type == Tile.TYPE_MOVABLE_WALL) {
-                            textureData = defaultFloorTexture.getData();
-                            textureSizeBits = defaultFloorTexture.getSizeBits();
+                            texture = defaultFloorTexture;
                         } else {
-                            textureData = tile.getTexture().getData();
-                            textureSizeBits = tile.getTexture().getSizeBits();
+                            texture = tile.getTexture();
                         }
+
+                        while (size < texture.getHeight() && texture.hasHalfSizeTexture()) {
+                            texture = texture.getHalfSizeTexture();
+                        }
+
+                        textureData = texture.getData();
+                        textureSizeBits = texture.getSizeBits();
 
                         lastMapX = mapX;
                         lastMapY = mapY;
@@ -499,7 +506,7 @@ public class SoftRender3D extends View {
 
                     int renderX = (int) (focalDistance * thing / dist + (viewWidth - renderWidth) / 2);
                     int renderX2 = Math.min(viewWidth, renderX + toIntFloor(f_renderWidth));
-                    int depth = drawDepthShading ? (int) (dist * DEPTH_SCALE) : 0;
+                    int depth = drawDepthShading ? Math.min(DEPTH_MAX, (int) (dist * DEPTH_SCALE)) : 0;
                     int f_dist = toFixedPoint(dist);
                     for (int x = Math.max(renderX, 0); x < renderX2; x++) {
                         Ray ray = rays[viewWidth - x - 1];
