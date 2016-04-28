@@ -7,7 +7,6 @@ import com.brackeen.scared.entity.Player;
 
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Transparency;
 import java.awt.image.AreaAveragingScaleFilter;
@@ -137,7 +136,6 @@ public class SoftRender3D extends View {
 
     private SoftTexture dstBuffer;
     private BufferedImage bufferedImage;
-    private int pixelScale = 1;
 
     private Map map;
     private SoftTexture background;
@@ -207,15 +205,6 @@ public class SoftRender3D extends View {
         this.map = map;
     }
 
-    public int getPixelScale() {
-        return pixelScale;
-    }
-
-    public void setPixelScale(int pixelScale) {
-        this.pixelScale = pixelScale;
-        onResize();
-    }
-
     public float getFov() {
         return fov;
     }
@@ -232,7 +221,6 @@ public class SoftRender3D extends View {
      * Gets the view angle, in degrees, at location x within the view.
      */
     public float getAngleAt(int x) {
-        x /= pixelScale;
         x = Math.max(0, x);
         x = Math.min(x, rayAngleTable.length - 1);
         return angleToDegrees((rayAngleTable[x] - cameraAngle) & NUM_DEGREES_MASK);
@@ -243,8 +231,8 @@ public class SoftRender3D extends View {
         fov = getWidth() * 45 / getHeight(); // 60 degrees for 640x480
         fov = Math.max(MIN_FOV, fov);
         fov = Math.min(MAX_FOV, fov);
-        int w = ((int) getWidth()) / pixelScale;
-        int h = ((int) getHeight()) / pixelScale;
+        int w = (int) getWidth();
+        int h = (int) getHeight();
         dstBuffer = null;
         if (bufferedImage != null) {
             bufferedImage.flush();
@@ -308,17 +296,7 @@ public class SoftRender3D extends View {
             drawFloors();
             drawEntities(visibleEntities);
 
-            if (pixelScale > 1) {
-                Object oldValue = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
-                if (oldValue == null) {
-                    oldValue = RenderingHints.VALUE_INTERPOLATION_BILINEAR;
-                }
-                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-                g.drawImage(bufferedImage, 0, 0, bufferedImage.getWidth() * pixelScale, bufferedImage.getHeight() * pixelScale, null);
-                g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, oldValue);
-            } else {
-                g.drawImage(bufferedImage, null, null);
-            }
+            g.drawImage(bufferedImage, null, null);
         }
     }
 
