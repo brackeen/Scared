@@ -1,6 +1,5 @@
 package com.brackeen.scared;
 
-import com.brackeen.scared.entity.Player;
 import com.brackeen.app.App;
 import com.brackeen.app.BitmapFont;
 import com.brackeen.app.BufferedAudio;
@@ -12,6 +11,7 @@ import com.brackeen.scared.entity.BlastMark;
 import com.brackeen.scared.entity.Enemy;
 import com.brackeen.scared.entity.Entity;
 import com.brackeen.scared.entity.Key;
+import com.brackeen.scared.entity.Player;
 
 import java.awt.Color;
 import java.awt.Cursor;
@@ -30,6 +30,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 public class GameScene extends Scene {
 
@@ -199,7 +200,8 @@ public class GameScene extends Scene {
         }
 
         renderer = new SoftRender3D(textureCache, getWidth(), getHeight());
-        //renderer.setPixelScale(2);
+        Preferences prefs = Preferences.userNodeForPackage(Main.class);
+        renderer.setDepthShadingEnabled(prefs.getBoolean(Main.SETTING_DEPTH_SHADING, true));
         addSubview(renderer);
 
         // Crosshair
@@ -592,9 +594,13 @@ public class GameScene extends Scene {
                     "entities=" + map.getNumEntities());
         } else if ("SHADING".equalsIgnoreCase(command)) {
             renderer.setDepthShadingEnabled(!renderer.isDepthShadingEnabled());
+            Preferences prefs = Preferences.userNodeForPackage(Main.class);
+            prefs.putBoolean(Main.SETTING_DEPTH_SHADING, renderer.isDepthShadingEnabled());
             return "Depth shading is now " + (renderer.isDepthShadingEnabled() ? "on" : "off");
         } else if ("SCALING".equalsIgnoreCase(command)) {
             App.getApp().setAutoPixelScale(!App.getApp().isAutoPixelScale());
+            Preferences prefs = Preferences.userNodeForPackage(Main.class);
+            prefs.putBoolean(Main.SETTING_AUTO_PIXEL_SCALE, App.getApp().isAutoPixelScale());
             return "Auto pixel scaling is now " + (App.getApp().isAutoPixelScale() ? "on" : "off");
         } else if ("FREEZE".equalsIgnoreCase(command)) {
             player.setFreezeEnemies(!player.isFreezeEnemies());
@@ -664,6 +670,8 @@ public class GameScene extends Scene {
                 volume =  Math.round(BufferedAudio.getMasterVolume() * VOLUME_SCALE);
             } else {
                 BufferedAudio.setMasterVolume(volume / (float)VOLUME_SCALE);
+                Preferences prefs = Preferences.userNodeForPackage(Main.class);
+                prefs.putFloat(Main.SETTING_VOLUME, BufferedAudio.getMasterVolume());
             }
             return "Volume set to " + volume;
         } else {
