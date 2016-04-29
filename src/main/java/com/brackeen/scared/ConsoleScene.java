@@ -20,7 +20,8 @@ public class ConsoleScene extends Scene {
     private static final int MAX_COMMAND_HISTORY = 200;
     private static final String PROMPT = "] ";
 
-    private static List<String> commandHistory = new ArrayList<>();
+    private static List<String> originalCommandHistory = new ArrayList<>();
+    private static List<String> editedCommandHistory = new ArrayList<>();
 
     private final GameScene gameScene;
     private BitmapFont messageFont;
@@ -40,7 +41,7 @@ public class ConsoleScene extends Scene {
     public void onLoad() {
         App app = App.getApp();
 
-        commandHistoryIndex = commandHistory.size();
+        commandHistoryIndex = originalCommandHistory.size();
 
         messageFont = new BitmapFont(app.getImage("/ui/console_font.png"), 8, ' ');
         messageFont.setTracking(-2);
@@ -102,7 +103,7 @@ public class ConsoleScene extends Scene {
                     commandHistoryIndex = Math.max(0, commandHistoryIndex - 1);
                     setCursorOn(true);
                 } else if (ke.getKeyCode() == KeyEvent.VK_DOWN) {
-                    commandHistoryIndex = Math.min(commandHistory.size(), commandHistoryIndex + 1);
+                    commandHistoryIndex = Math.min(originalCommandHistory.size(), commandHistoryIndex + 1);
                     setCursorOn(true);
                 } else if (ke.getKeyCode() == KeyEvent.VK_ENTER) {
                     setCursorOn(true);
@@ -112,11 +113,15 @@ public class ConsoleScene extends Scene {
                         String response = gameScene.doCommand(currentLine);
                         App.log(response);
 
-                        commandHistory.add(currentLine);
-                        if (commandHistory.size() > MAX_COMMAND_HISTORY) {
-                            commandHistory.remove(0);
+                        setCurrentLine(getCurrentLine(originalCommandHistory));
+
+                        originalCommandHistory.add(currentLine);
+                        editedCommandHistory.add(currentLine);
+                        if (originalCommandHistory.size() > MAX_COMMAND_HISTORY) {
+                            originalCommandHistory.remove(0);
+                            editedCommandHistory.remove(0);
                         }
-                        commandHistoryIndex = commandHistory.size();
+                        commandHistoryIndex = originalCommandHistory.size();
                         newCommandLine = "";
                     }
                 }
@@ -150,6 +155,10 @@ public class ConsoleScene extends Scene {
     }
 
     private String getCurrentLine() {
+        return getCurrentLine(editedCommandHistory);
+    }
+
+    private String getCurrentLine(List<String> commandHistory) {
         String currentLine;
         if (commandHistoryIndex < commandHistory.size()) {
             currentLine = commandHistory.get(commandHistoryIndex);
@@ -160,8 +169,8 @@ public class ConsoleScene extends Scene {
     }
 
     private void setCurrentLine(String currentLine) {
-        if (commandHistoryIndex < commandHistory.size()) {
-            commandHistory.set(commandHistoryIndex, currentLine);
+        if (commandHistoryIndex < editedCommandHistory.size()) {
+            editedCommandHistory.set(commandHistoryIndex, currentLine);
         } else {
             newCommandLine = currentLine;
         }
