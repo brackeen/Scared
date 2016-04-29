@@ -246,11 +246,15 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     }
 
     private void setPixelScale() {
-        float area = getWidth() * getHeight();
-        float areaFactor = (float) (Math.sqrt(area / (autoPixelScaleBaseWidth * autoPixelScaleBaseHeight)));
-        int pixelScale = (int) Math.round(0.8 + Math.log(areaFactor) / Math.log(2));
-        pixelScale = Math.max(1, pixelScale);
-        setPixelScale(pixelScale);
+        if (autoPixelScale) {
+            float area = getWidth() * getHeight();
+            float areaFactor = (float) (Math.sqrt(area / (autoPixelScaleBaseWidth * autoPixelScaleBaseHeight)));
+            int pixelScale = (int) Math.round(0.8 + Math.log(areaFactor) / Math.log(2));
+            pixelScale = Math.max(1, pixelScale);
+            setPixelScale(pixelScale);
+        } else {
+            setPixelScale(1);
+        }
     }
 
     private synchronized void tick() {
@@ -266,6 +270,16 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             // For appletviewer
             APP.set(this);
         }
+
+        int oldPixelScale = pixelScale;
+        setPixelScale();
+        if (oldPixelScale != pixelScale && bufferStrategy != null) {
+            System.out.print("/");
+            bufferStrategy.dispose();
+            bufferStrategy = null;
+            needsResize = true;
+        }
+
         if (bufferStrategy != null && canvas != null &&
                 (canvas.getWidth() != getWidth() || canvas.getHeight() != getHeight())) {
             bufferStrategy.dispose();
@@ -273,9 +287,6 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             needsResize = true;
         }
         if (bufferStrategy == null) {
-            if (autoPixelScale) {
-                setPixelScale();
-            }
             removeAll();
             canvas = new Canvas();
             canvas.setSize(getWidth(), getHeight());

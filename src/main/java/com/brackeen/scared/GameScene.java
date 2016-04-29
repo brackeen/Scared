@@ -551,9 +551,17 @@ public class GameScene extends Scene {
     public String doCommand(String command) {
         Player player = map.getPlayer();
 
+        if (command == null) {
+            command = "";
+        } else {
+            command = command.trim();
+        }
+
         if ("HELP".equalsIgnoreCase(command)) {
             return ("stats     Show stats.\n" +
                     "volume x  Set audio volume (from 0 to " + VOLUME_SCALE + ")\n" +
+                    "shading   Enable/disable depth shading\n" +
+                    "scaling   Enable/disable auto pixel scaling\n" +
                     "level x   Skip to level x (from 1 to " + NUM_LEVELS + ").\n" +
                     "ammo      Give yourself some ammo.\n" +
                     "health    Give yourself a health kit.\n" +
@@ -582,6 +590,12 @@ public class GameScene extends Scene {
                     "angle=" + String.format("%.2f", player.getDirection()) + "\n" +
                     "actions=" + map.getNumActions() + "\n" +
                     "entities=" + map.getNumEntities());
+        } else if ("SHADING".equalsIgnoreCase(command)) {
+            renderer.setDepthShadingEnabled(!renderer.isDepthShadingEnabled());
+            return "Depth shading is now " + (renderer.isDepthShadingEnabled() ? "on" : "off");
+        } else if ("SCALING".equalsIgnoreCase(command)) {
+            App.getApp().setAutoPixelScale(!App.getApp().isAutoPixelScale());
+            return "Auto pixel scaling is now " + (App.getApp().isAutoPixelScale() ? "on" : "off");
         } else if ("FREEZE".equalsIgnoreCase(command)) {
             player.setFreezeEnemies(!player.isFreezeEnemies());
             if (player.isFreezeEnemies()) {
@@ -608,7 +622,7 @@ public class GameScene extends Scene {
             player.setHealth(Math.min(Player.MAX_HEALTH, player.getHealth() + 20));
             playSound("/sound/getammo.wav");
             return "You got a med kit";
-        } else if (command != null && command.length() > 5 && "LEVEL".equalsIgnoreCase(command.substring(0, 5))) {
+        } else if (command.length() > 5 && "LEVEL".equalsIgnoreCase(command.substring(0, 5))) {
             int newLevel;
             try {
                 newLevel = Integer.parseInt(command.substring(5).trim()) - 1;
@@ -623,7 +637,7 @@ public class GameScene extends Scene {
             } else {
                 return "Invalid level";
             }
-        } else if (command != null && command.length() > 3 && "KEY".equalsIgnoreCase(command.substring(0, 3))) {
+        } else if (command.length() > 3 && "KEY".equalsIgnoreCase(command.substring(0, 3))) {
             int key;
             try {
                 key = Integer.parseInt(command.substring(3).trim());
@@ -639,7 +653,7 @@ public class GameScene extends Scene {
             } else {
                 return "Invalid key";
             }
-        } else if (command != null && "VOLUME".equalsIgnoreCase(command.substring(0, 6))) {
+        } else if (command.length() >= 6 && "VOLUME".equalsIgnoreCase(command.substring(0, 6))) {
             int volume;
             try {
                 volume = Integer.parseInt(command.substring(6).trim());
