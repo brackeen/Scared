@@ -44,6 +44,7 @@ public class BufferedAudio {
          * Sets the linear volume of the line from 0 to 1.
          */
         public void setVolume(float volume) {
+            volume *= masterVolume;
             float gainDB = (float) (20 * Math.log10(volume));
             setControlValue(FloatControl.Type.MASTER_GAIN, gainDB);
         }
@@ -75,6 +76,16 @@ public class BufferedAudio {
         public void loop() {
             clip.loop(Clip.LOOP_CONTINUOUSLY);
         }
+    }
+
+    private static float masterVolume = 1.0f;
+
+    public static void setMasterVolume(float volume) {
+        masterVolume = volume;
+    }
+
+    public static float getMasterVolume() {
+        return masterVolume;
     }
 
     public static BufferedAudio read(URL url, int maxSimultaneousCopies) throws IOException {

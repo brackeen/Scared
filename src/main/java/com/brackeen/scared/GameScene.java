@@ -61,6 +61,8 @@ public class GameScene extends Scene {
     private static final int WARNING_BORDER_SIZE = 6;
     private static final int UI_SPACING = 4;
 
+    private static final int VOLUME_SCALE = 10;
+
     private final HashMap<String, SoftTexture> textureCache = new HashMap<>();
 
     private boolean keyLeft = false;
@@ -550,16 +552,17 @@ public class GameScene extends Scene {
         Player player = map.getPlayer();
 
         if ("HELP".equalsIgnoreCase(command)) {
-            return ("stats    Show stats.\n" +
-                    "ammo     Give yourself some ammo.\n" +
-                    "health   Give yourself a health kit.\n" +
-                    "key x    Give yourself key x (from 1 to " + Key.NUM_KEYS + ").\n" +
-                    "level x  Skip to level x (from 1 to " + NUM_LEVELS + ").\n" +
-                    "freeze   Freeze all enemies in place.\n" +
-                    "cheat    Give yourself invincibility.\n" +
-                    "debug    Show debug info.\n" +
-                    "quit     Quit to main menu.\n" +
-                    "exit     Exit game.");
+            return ("stats     Show stats.\n" +
+                    "volume x  Set audio volume (from 0 to " + VOLUME_SCALE + ")\n" +
+                    "level x   Skip to level x (from 1 to " + NUM_LEVELS + ").\n" +
+                    "ammo      Give yourself some ammo.\n" +
+                    "health    Give yourself a health kit.\n" +
+                    "key x     Give yourself key x (from 1 to " + Key.NUM_KEYS + ").\n" +
+                    "cheat     Give yourself invincibility.\n" +
+                    "freeze    Freeze all enemies in place.\n" +
+                    "debug     Show debug info.\n" +
+                    "quit      Quit to main menu.\n" +
+                    "exit      Exit game.");
         } else if ("EXIT".equalsIgnoreCase(command) && App.getApp().dispose()) {
             return "Exiting...";
         } else if ("QUIT".equalsIgnoreCase(command)) {
@@ -636,6 +639,19 @@ public class GameScene extends Scene {
             } else {
                 return "Invalid key";
             }
+        } else if (command != null && "VOLUME".equalsIgnoreCase(command.substring(0, 6))) {
+            int volume;
+            try {
+                volume = Integer.parseInt(command.substring(6).trim());
+            } catch (NumberFormatException ex) {
+                volume = -1;
+            }
+            if (volume < 0 || volume > VOLUME_SCALE) {
+                volume =  Math.round(BufferedAudio.getMasterVolume() * VOLUME_SCALE);
+            } else {
+                BufferedAudio.setMasterVolume(volume / (float)VOLUME_SCALE);
+            }
+            return "Volume set to " + volume;
         } else {
             return "Unknown command";
         }
