@@ -688,18 +688,21 @@ public class GameScene extends Scene {
             float v = Math.abs(runVelocity) + Math.abs(strafeVelocity);
             v = Math.min(v, MAX_RUN_VELOCITY);
             double angle = (System.currentTimeMillis() / 80.0) % (Math.PI * 2);
+            int maxBob = (int) Math.ceil(gunView.getHeight() * 0.75f * MAX_RUN_VELOCITY);
             int bob = (int) Math.round(gunView.getHeight() * 0.75f * v * Math.sin(angle));
 
-            float x = gunView.getWidth() * 0.3f + displayWeaponOffset;
-            float y = Math.round(getHeight() + bob - gunView.getWidth() * 0.7f);
+            float x = gunView.getWidth() * 0.4f + displayWeaponOffset;
+            float y = Math.round(getHeight() + bob - gunView.getWidth() + maxBob);
 
             if (gunBlastCountdown > 0) {
                 gunBlastCountdown--;
                 gunBlastView.setVisible(true);
+                gunView.setVisible(false);
                 x += 3;
-                y += 5;
+                y += 8;
             } else {
                 gunBlastView.setVisible(false);
+                gunView.setVisible(true);
             }
 
             float stepSize = Math.round(getWidth() / 64);
@@ -712,6 +715,7 @@ public class GameScene extends Scene {
             gunView.setLocation((int) x, (int) y);
         } else {
             gunBlastView.setVisible(false);
+            gunView.setVisible(true);
             gunBlastCountdown = 0;
         }
     }
