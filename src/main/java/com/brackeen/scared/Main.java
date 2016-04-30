@@ -36,6 +36,6 @@ public class Main extends App {
 
     @Override
     public Scene createFirstScene() {
-        return new TitleScene();
+        return new LoadingScene();
     }
 }

@@ -165,11 +165,7 @@ public class SoftRender3D extends View {
 
     private Ray[] rays;
 
-    /**
-     * @param width  width in pixels
-     * @param height height in pixels
-     */
-    public SoftRender3D(HashMap<String, SoftTexture> textureCache, float width, float height) {
+    public SoftRender3D(HashMap<String, SoftTexture> textureCache) {
         f_cosTable = new int[NUM_DEGREES];
         f_sinTable = new int[NUM_DEGREES];
         f_tanTable = new int[NUM_DEGREES];
@@ -180,9 +176,6 @@ public class SoftRender3D extends View {
             f_tanTable[i] = toFixedPoint(Math.tan(angleToRadians(i)));
             f_cotTable[i] = toFixedPoint(1 / Math.tan(angleToRadians(i)));
         }
-
-        setSize(width, height);
-        onResize();
 
         for (int i = 0; i < doorTextures.length; i++) {
             doorTextures[i] = textureCache.get("door0" + i + ".png");
@@ -197,12 +190,21 @@ public class SoftRender3D extends View {
         doorSideTexture = textureCache.get("wall07.png");
     }
 
+    @Override
+    public void onLoad() {
+        onResize();
+    }
+
     public Map getMap() {
         return map;
     }
 
     public void setMap(Map map) {
         this.map = map;
+        if (map != null) {
+            Player player = map.getPlayer();
+            setCamera(player.getX(), player.getY(), player.getZ(), player.getDirection());
+        }
     }
 
     public float getFov() {
@@ -397,7 +399,7 @@ public class SoftRender3D extends View {
 
             int f_dist = (int) (((long) f_cameraZ * f_focalDistance / row) >> FRACTION_BITS);
             int depth = drawDepthShading ? Math.min(DEPTH_MAX, toIntFloor(f_dist * DEPTH_SCALE)) : 0;
-            int size = toIntFloor(div(f_focalDistance, f_dist));
+            int size = f_dist <= 0 ? Integer.MAX_VALUE : toIntFloor(div(f_focalDistance, f_dist));
 
             for (int x = startX; x < endX; x++) {
                 if (currentY >= rays[x].floorDrawY) {

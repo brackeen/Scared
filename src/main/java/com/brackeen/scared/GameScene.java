@@ -64,7 +64,7 @@ public class GameScene extends Scene {
 
     private static final int VOLUME_SCALE = 10;
 
-    private final HashMap<String, SoftTexture> textureCache = new HashMap<>();
+    private final HashMap<String, SoftTexture> textureCache;
 
     private boolean keyLeft = false;
     private boolean keyRight = false;
@@ -122,85 +122,28 @@ public class GameScene extends Scene {
     private View gameOverMessage;
     private ImageView crosshair;
 
+    public GameScene(HashMap<String, SoftTexture> textureCache) {
+        this.textureCache = textureCache;
+    }
+
     @Override
     public void onLoad() {
         App app = App.getApp();
+
+        App.log("Use Arrows or WASD to move\n" +
+                "Q/E to strafe\n" +
+                "Space or mouse1 to fire");
 
         messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 8, ' ');
         scoreFont = new BitmapFont(app.getImage("/ui/score_font.png"), 12, '0');
         scoreFont.setTracking(0);
 
-        // Cache textures
-        // NOTE: Java has trouble with indexed PNG images with a palette of less than 16 colors.
-        // PNG optimizers create these. Images created from Photoshop or other major tools are fine.
-        getTexture("/sprites/key01.png", true);
-        getTexture("/sprites/key02.png", true);
-        getTexture("/sprites/key03.png", true);
-        getTexture("/sprites/medkit.png", true);
-        getTexture("/sprites/ammo.png", true);
-        getTexture("/sprites/nuclear.png", true);
-        blastTextures[0] = getTexture("/sprites/blast1.png", false);
-        blastTextures[1] = getTexture("/sprites/blast2.png", false);
-        blastTextures[2] = getTexture("/sprites/blast3.png", false);
+        blastTextures[0] = textureCache.get("/sprites/blast1.png");
+        blastTextures[1] = textureCache.get("/sprites/blast2.png");
+        blastTextures[2] = textureCache.get("/sprites/blast3.png");
 
-        for (int i = 0; i < Enemy.NUM_IMAGES; i++) {
-            getTexture("/enemy/" + i + ".png", true);
-        }
-
-        // All textures must be a size that is a power-of-two. 128x128, 64x64, etc.
-        String[] textures = {
-                "door00.png",
-                "door01.png",
-                "door02.png",
-                "door03.png",
-                "exit00.png",
-                "exit01.png",
-                "generator00.png",
-                "generator01.png",
-                "wall00.png",
-                "wall01.png",
-                "wall02.png",
-                "wall03.png",
-                "wall04.png",
-                "wall05.png",
-                "wall06.png",
-                "wall07.png",
-                "wall08.png",
-                "wall09.png",
-                "wall10.png",
-                "wall11.png",
-                "wall12.png",
-                "wall13.png",
-                "wall14.png",
-                "wall15.png",
-                "window00.png",
-        };
-
-        // Create mip-maps
-        final int mipMapCount = 3;
-        for (String textureName : textures) {
-            String fullname = "/textures/" + textureName;
-            SoftTexture texture = getTexture(fullname, false);
-            textureCache.put(textureName, texture);
-
-            SoftTexture.DownscaleType downscaleType = SoftTexture.DownscaleType.WEIGHTED_EVEN;
-            // Hack: Sharpen on odd pixels on these two textures to make their highlights look better
-            if ("wall01.png".equals(textureName) || "wall06.png".equals(textureName)) {
-                downscaleType = SoftTexture.DownscaleType.WEIGHTED_ODD;
-            }
-
-            for (int i = 0; i < mipMapCount; i++) {
-                texture.createHalfSizeTexture(downscaleType);
-                texture = texture.getHalfSizeTexture();
-                if (texture == null) {
-                    break;
-                }
-                downscaleType = SoftTexture.DownscaleType.AVERAGE;
-            }
-        }
-
-        renderer = new SoftRender3D(textureCache, getWidth(), getHeight());
         Preferences prefs = Preferences.userNodeForPackage(Main.class);
+        this.renderer = new SoftRender3D(textureCache);
         renderer.setDepthShadingEnabled(prefs.getBoolean(Main.SETTING_DEPTH_SHADING, true));
         addSubview(renderer);
 
@@ -453,16 +396,6 @@ public class GameScene extends Scene {
         }
     }
 
-    private SoftTexture getTexture(String name, boolean cache) {
-        App app = App.getApp();
-        BufferedImage image = app.getImage(name);
-        SoftTexture texture = new SoftTexture(image);
-        if (cache) {
-            textureCache.put(name, texture);
-        }
-        return texture;
-    }
-
     private void setMessage(String message) {
         messageQueue.add(message);
     }
@@ -571,15 +504,12 @@ public class GameScene extends Scene {
                     "cheat     Give yourself invincibility.\n" +
                     "freeze    Freeze all enemies in place.\n" +
                     "debug     Show debug info.\n" +
-                    "quit      Quit to main menu.\n" +
                     "exit      Exit game.");
+        } else if ("CLEAR".equalsIgnoreCase(command)) {
+            App.getApp().getLog().clear();
+            return null;
         } else if ("EXIT".equalsIgnoreCase(command) && App.getApp().dispose()) {
             return "Exiting...";
-        } else if ("QUIT".equalsIgnoreCase(command)) {
-            map.unload();
-            App.getApp().popScene(); // Back to game
-            App.getApp().popScene(); // Back to title
-            return "Quitting...";
         } else if ("4 8 15 16 23 42".equalsIgnoreCase(command)) {
             return "Timer reset to 108 minutes.";
         } else if ("STATS".equalsIgnoreCase(command)) {

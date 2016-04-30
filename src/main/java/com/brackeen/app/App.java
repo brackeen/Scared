@@ -321,14 +321,9 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             }
 
             // Tick
-            View scene = null;
             double elapsedTime = (System.nanoTime() - lastTime) / 1000000000.0 + remainingTime;
             int ticks = (int) (frameRate * elapsedTime);
-            if (ticks == 0) {
-                if (!sceneStack.isEmpty()) {
-                    scene = sceneStack.peek();
-                }
-            } else {
+            if (ticks > 0) {
                 if (ticks > 4) {
                     ticks = 4;
                     remainingTime = 0;
@@ -339,10 +334,14 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                     if (sceneStack.size() == 0) {
                         pushScene(createFirstScene());
                     }
-                    scene = sceneStack.peek();
+                    View scene = sceneStack.peek();
                     scene.tick();
                 }
                 lastTime = System.nanoTime();
+            }
+            View scene = null;
+            if (!sceneStack.isEmpty()) {
+                scene = sceneStack.peek();
             }
 
             // Set cursor
@@ -555,8 +554,10 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     }
 
     public void setScene(Scene scene) {
-        if (canPopScene()) {
-            popScene();
+        View oldScene;
+        if (sceneStack.size() > 0) {
+            oldScene = sceneStack.pop();
+            oldScene.unload();
         }
         pushScene(scene);
     }
