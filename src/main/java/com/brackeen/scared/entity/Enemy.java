@@ -53,7 +53,7 @@ public class Enemy extends Entity {
         this.map = map;
         this.stats = stats;
         setTexture(textures[0]);
-        setTextureScale(getTextureScale() / 2);
+        //setTextureScale(getTextureScale() / 2); // For 128x128 textures
         setZ(-4f / DEFAULT_PIXELS_PER_TILE);
         setState(STATE_ASLEEP);
 
