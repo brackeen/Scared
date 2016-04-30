@@ -494,9 +494,9 @@ public class GameScene extends Scene {
 
         if ("HELP".equalsIgnoreCase(command)) {
             return ("stats     Show stats.\n" +
-                    "volume x  Set audio volume (from 0 to " + VOLUME_SCALE + ")\n" +
-                    "shading   Enable/disable depth shading\n" +
-                    "scaling   Enable/disable auto pixel scaling\n" +
+                    "volume x  Set audio volume (from 0 to " + VOLUME_SCALE + ").\n" +
+                    "shading   Enable/disable depth shading.\n" +
+                    "scaling   Enable/disable auto pixel scaling.\n" +
                     "level x   Skip to level x (from 1 to " + NUM_LEVELS + ").\n" +
                     "ammo      Give yourself some ammo.\n" +
                     "health    Give yourself a health kit.\n" +
@@ -681,17 +681,17 @@ public class GameScene extends Scene {
 
         if (player.isAlive()) {
             float displayWeaponOffset = crosshair.getX();
-            displayWeaponOffset = Math.max(displayWeaponOffset, 60);
-            displayWeaponOffset = Math.min(displayWeaponOffset, getWidth() - 180);
+            displayWeaponOffset = Math.max(displayWeaponOffset, 32);
+            displayWeaponOffset = Math.min(displayWeaponOffset, getWidth() -  gunView.getWidth());
 
             // Make the gun bob
             float v = Math.abs(runVelocity) + Math.abs(strafeVelocity);
             v = Math.min(v, MAX_RUN_VELOCITY);
             double angle = (System.currentTimeMillis() / 80.0) % (Math.PI * 2);
-            int bob = (int) Math.round(100 * v * Math.sin(angle));
+            int bob = (int) Math.round(gunView.getHeight() * 0.75f * v * Math.sin(angle));
 
-            float x = gunView.getWidth() / 2 + displayWeaponOffset;
-            float y = Math.round(getHeight() + bob - gunView.getWidth() * 5 / 8);
+            float x = gunView.getWidth() * 0.3f + displayWeaponOffset;
+            float y = Math.round(getHeight() + bob - gunView.getWidth() * 0.7f);
 
             if (gunBlastCountdown > 0) {
                 gunBlastCountdown--;
@@ -708,8 +708,8 @@ public class GameScene extends Scene {
                 x = gunView.getX() + Math.signum(dx) * stepSize;
             }
 
-            gunBlastView.setLocation(x, y);
-            gunView.setLocation(x, y);
+            gunBlastView.setLocation((int) x, (int) y);
+            gunView.setLocation((int) x, (int) y);
         } else {
             gunBlastView.setVisible(false);
             gunBlastCountdown = 0;
