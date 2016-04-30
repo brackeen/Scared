@@ -116,10 +116,11 @@ public class GameScene extends Scene {
     private ImageView gunView;
     private ImageView gunBlastView;
     private int gunBlastCountdown;
-    private int deathTicksRemaining;
+    private int gameOverTicksRemaining;
     private View warningSplash;
     private View gameOverBackground;
     private View gameOverMessage;
+    private String gameOverText = "";
     private ImageView crosshair;
 
     public GameScene(HashMap<String, SoftTexture> textureCache) {
@@ -132,7 +133,7 @@ public class GameScene extends Scene {
 
         App.log("Use Arrows or WASD to move\n" +
                 "Q/E to strafe\n" +
-                "Space or mouse1 to fire");
+                "Space or mouse1 to fire\n");
 
         messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 8, ' ');
         scoreFont = new BitmapFont(app.getImage("/ui/score_font.png"), 12, '0');
@@ -795,17 +796,23 @@ public class GameScene extends Scene {
         copyLevelStats();
         hasWon = true;
         mousePressed = false;
+        keyFire = false;
+        gameOverTicksRemaining = 60 * 5;
         map.getPlayer().setAlive(false);
-        if (gameOverMessage != null) {
-            gameOverMessage.removeFromSuperview();
-        }
         if (gameOverBackground == null) {
             gameOverBackground = new View(0, 0, getWidth(), getHeight());
             gameOverBackground.setBackgroundColor(new Color(0, 0, 0, 0.25f));
             addSubview(gameOverBackground);
         }
-        gameOverMessage = Label.makeMultilineLabel(messageFont,
-                "YOU WIN. Click to play again.\n\n" + statsDescription, 0.5f);
+        setGameOverMessage("YOU WIN.\n\n" + statsDescription + "\n\n");
+    }
+
+    private void setGameOverMessage(String text) {
+        gameOverText = text;
+        if (gameOverMessage != null) {
+            gameOverMessage.removeFromSuperview();
+        }
+        gameOverMessage = Label.makeMultilineLabel(messageFont, text, 0.5f);
         gameOverMessage.setLocation(getWidth() / 2, getHeight() / 2);
         gameOverMessage.setAnchor(0.5f, 0.5f);
         addSubview(gameOverMessage);
@@ -815,38 +822,49 @@ public class GameScene extends Scene {
         Player player = map.getPlayer();
 
         if (hasWon) {
-            if (mousePressed) {
-                player.setHealth(Player.DEFAULT_HEALTH);
-                player.setAmmo(Player.DEFAULT_AMMO);
-                stats = new Stats();
-                setLevel(0);
-            }
-            return;
-        } else if (!player.isAlive()) {
-            player.setZ(Math.max(player.getZ() - 0.008f, player.getRadius()));
-            deathTicksRemaining--;
-            if (deathTicksRemaining <= 0) {
-                if (deathTicksRemaining == 0) {
-                    if (gameOverMessage != null) {
-                        gameOverMessage.removeFromSuperview();
-                    }
-                    gameOverMessage = new Label(messageFont, "YOU DIED.");
-                    gameOverMessage.setLocation(getWidth() / 2, getHeight() / 2);
-                    gameOverMessage.setAnchor(0.5f, 0.5f);
-                    addSubview(gameOverMessage);
-                    stats.numDeaths++;
+            gameOverTicksRemaining--;
+            if (gameOverTicksRemaining <= 0) {
+                if (gameOverTicksRemaining == 0) {
+                    setGameOverMessage(gameOverText + "Click to play again "); // Extra space for centering
                 }
-                if (mousePressed) {
+                if (mousePressed || keyFire) {
                     player.setHealth(Player.DEFAULT_HEALTH);
                     player.setAmmo(Player.DEFAULT_AMMO);
-                    setLevel(level);
+                    stats = new Stats();
+                    setLevel(0);
                 }
             } else {
                 mousePressed = false;
+                keyFire = false;
+            }
+            return;
+        } else if (!player.isAlive()) {
+            final int gameOverExtraTicks = 60;
+            player.setZ(Math.max(player.getZ() - 0.008f, player.getRadius()));
+            gameOverTicksRemaining--;
+            if (gameOverTicksRemaining > -gameOverExtraTicks) {
+                mousePressed = false;
+                keyFire = false;
+            }
+            if (gameOverTicksRemaining <= 0) {
+                if (gameOverTicksRemaining == 0) {
+                    setGameOverMessage("YOU DIED.\n");
+                    stats.numDeaths++;
+                }
+                if (gameOverTicksRemaining <= -gameOverExtraTicks) {
+                    if (gameOverTicksRemaining == -gameOverExtraTicks) {
+                        setGameOverMessage(gameOverText + "Click to continue");
+                    }
+                    if (mousePressed || keyFire) {
+                        player.setHealth(Player.DEFAULT_HEALTH);
+                        player.setAmmo(Player.DEFAULT_AMMO);
+                        setLevel(level);
+                    }
+                }
             }
             return;
         } else {
-            deathTicksRemaining = 60;
+            gameOverTicksRemaining = 60;
         }
 
         // Handle firing

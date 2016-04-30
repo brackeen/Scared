@@ -22,21 +22,21 @@ public class Stats {
     public int totalEnemies;
 
     public String getDescription(Map map, int level) {
-        final int padWidth = 39;
+        final int padWidth = 36;
         String playerAccuracy = (numShotsFired == 0) ? "N/A" : String.format("%.1f%%",
                 numShotsFiredHit * 100.0f / numShotsFired);
         String enemyAccuracy = (numEnemyShotsFired == 0) ? "N/A" : String.format("%.1f%%",
                 numEnemyShotsFiredHit * 100.0f / numEnemyShotsFired);
-        return (padLine("              Level: " + level + "/" + GameScene.NUM_LEVELS, padWidth) + "\n" +
-                padLine("        Shots fired: " + numShotsFired, padWidth) + "\n" +
-                padLine("      Shot accuracy: " + playerAccuracy, padWidth) + "\n" +
-                padLine("     Enemies killed: " + (numKills + map.getPlayer().getKills()) + "/" + (totalEnemies + map.getNumEnemies()), padWidth) + "\n" +
-                padLine("  Enemy shots fired: " + numEnemyShotsFired, padWidth) + "\n" +
-                padLine("Enemy shot accuracy: " + enemyAccuracy, padWidth) + "\n" +
-                padLine("      Secrets found: " + (numSecretsFound + map.getPlayer().getSecrets()) + "/" + (totalSecrets + map.getNumSecrets()), padWidth) + "\n" +
-                padLine("             Deaths: " + numDeaths, padWidth) + "\n" +
-                padLine("               Time: " + getTimeElapsed(startTime), padWidth) + "\n" +
-                padLine("            Cheated: " + (cheated ? "YES" : "NO"), padWidth));
+        return (padLine("            Level: " + level + "/" + GameScene.NUM_LEVELS, padWidth) + "\n" +
+                padLine("      Shots fired: " + numShotsFired, padWidth) + "\n" +
+                padLine("         Accuracy: " + playerAccuracy, padWidth) + "\n" +
+                padLine("   Enemies killed: " + (numKills + map.getPlayer().getKills()) + "/" + (totalEnemies + map.getNumEnemies()), padWidth) + "\n" +
+                padLine("Enemy shots fired: " + numEnemyShotsFired, padWidth) + "\n" +
+                padLine("   Enemy Accuracy: " + enemyAccuracy, padWidth) + "\n" +
+                padLine("    Secrets found: " + (numSecretsFound + map.getPlayer().getSecrets()) + "/" + (totalSecrets + map.getNumSecrets()), padWidth) + "\n" +
+                padLine("           Deaths: " + numDeaths, padWidth) + "\n" +
+                padLine("             Time: " + getTimeElapsed(startTime), padWidth) + "\n" +
+                padLine("          Cheated: " + (cheated ? "YES" : "NO"), padWidth));
     }
 
     private static String getTimeElapsed(long startTimeNanos) {

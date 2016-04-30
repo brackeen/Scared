@@ -357,7 +357,9 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                     pick = pick.getSuperview();
                 }
             }
-            setCursor(cursor);
+            if (getCursor() != cursor) {
+                setCursor(cursor);
+            }
 
             // Draw
             Graphics2D g = (Graphics2D) bufferStrategy.getDrawGraphics();
