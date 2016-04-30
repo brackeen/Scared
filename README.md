@@ -12,13 +12,12 @@ An executable jar is available here: [http://www.brackeen.com/scared/](http://ww
 
 The source is organized as a Gradle project. You can build it from an IDE or from the command line.
 
-Assuming [Git](https://help.github.com/articles/set-up-git),
-[Java SE Development Kit 7](http://www.oracle.com/technetwork/java/javase/downloads/index.html), and
-[Gradle 2.0](http://gradle.org/gradle-download/)
+Assuming [Git](https://help.github.com/articles/set-up-git) and
+[JDK 7 or newer](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 is installed, open a terminal and enter:
 ```
 git clone https://github.com/brackeen/Scared.git
 cd Scared
-gradle clean build
+./gradlew build
 ```
 An executable jar is created in the `build/libs` folder.
