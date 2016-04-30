@@ -274,7 +274,6 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         int oldPixelScale = pixelScale;
         setPixelScale();
         if (oldPixelScale != pixelScale && bufferStrategy != null) {
-            System.out.print("/");
             bufferStrategy.dispose();
             bufferStrategy = null;
             needsResize = true;
