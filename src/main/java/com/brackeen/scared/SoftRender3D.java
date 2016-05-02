@@ -484,14 +484,15 @@ public class SoftRender3D extends View {
                         continue;
                     }
 
-                    int renderX = (int) (focalDistance * thing / dist + (viewWidth - renderWidth) / 2);
-                    int renderX2 = Math.min(viewWidth, renderX + toIntFloor(f_renderWidth));
+                    int f_renderX = toFixedPoint(focalDistance * thing / dist + (viewWidth - renderWidth - 1) / 2);
+                    int x1 = toIntCeil(f_renderX);
+                    int x2 = Math.min(viewWidth, x1 + toIntFloor(f_renderWidth));
                     int depth = drawDepthShading ? Math.min(DEPTH_MAX, (int) (dist * DEPTH_SCALE)) : 0;
                     int f_dist = toFixedPoint(dist);
-                    for (int x = Math.max(renderX, 0); x < renderX2; x++) {
+                    for (int x = Math.max(x1, 0); x < x2; x++) {
                         Ray ray = rays[viewWidth - x - 1];
                         if (f_dist < ray.f_dist) {
-                            int f_sliver = div(toFixedPoint(x - renderX), f_renderWidth);
+                            int f_sliver = div((x << FRACTION_BITS) - f_renderX, f_renderWidth);
                             drawTextureSliver(texture, false, f_sliver, depth, x, f_renderY, f_renderY + f_renderHeight);
                         }
                     }
