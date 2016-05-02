@@ -172,7 +172,6 @@ public class LoadingScene extends BaseConsoleScene {
         if (loadNextItem) {
             loadNextItem = false;
             if (itemsToLoad.isEmpty()) {
-                App.log("");
                 App.getApp().setScene(new GameScene(textureCache));
             } else {
                 Runnable runnable = itemsToLoad.remove(0);

@@ -74,6 +74,7 @@ public class GameScene extends Scene {
     private boolean keyStrafeRight = false;
     private boolean keyStrafeModifier = false;
     private boolean keyFire = false;
+    private boolean keyTab = false;
     private boolean mousePressed = false;
 
     private SoftRender3D renderer;
@@ -130,10 +131,6 @@ public class GameScene extends Scene {
     @Override
     public void onLoad() {
         App app = App.getApp();
-
-        App.log("Use Arrows or WASD to move\n" +
-                "Q/E to strafe\n" +
-                "Space or mouse1 to fire\n");
 
         messageFont = new BitmapFont(app.getImage("/ui/message_font.png"), 8, ' ');
         scoreFont = new BitmapFont(app.getImage("/ui/score_font.png"), 12, '0');
@@ -270,7 +267,10 @@ public class GameScene extends Scene {
                 } else if (ke.getKeyCode() == KeyEvent.VK_TAB || ke.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
                     specialStats.setVisible(true);
                     normalStats.setVisible(false);
-                    ticksUntilHideSpecialStats = 60;
+                    if (!keyTab) {
+                        keyTab = true;
+                        ticksUntilHideSpecialStats = 60;
+                    }
                 } else if (DEBUG_ALLOW_CAMERA_Z_CHANGES && ke.getKeyCode() == KeyEvent.VK_PAGE_UP) {
                     Player player = map.getPlayer();
                     player.setZ(Math.min(1 - 1 / 8f, player.getZ() + 1 / 128f));
@@ -481,6 +481,10 @@ public class GameScene extends Scene {
             case KeyEvent.VK_C:
                 keyStrafeModifier = down;
                 break;
+            case KeyEvent.VK_TAB:
+            case KeyEvent.VK_BACK_QUOTE:
+                keyTab = down;
+                break;
         }
     }
 
@@ -494,23 +498,28 @@ public class GameScene extends Scene {
         }
 
         if ("HELP".equalsIgnoreCase(command)) {
-            return ("stats     Show stats.\n" +
-                    "volume x  Set audio volume (from 0 to " + VOLUME_SCALE + ").\n" +
-                    "shading   Enable/disable depth shading.\n" +
-                    "scaling   Enable/disable auto pixel scaling.\n" +
-                    "level x   Skip to level x (from 1 to " + NUM_LEVELS + ").\n" +
-                    "ammo      Give yourself some ammo.\n" +
-                    "health    Give yourself a health kit.\n" +
-                    "key x     Give yourself key x (from 1 to " + Key.NUM_KEYS + ").\n" +
-                    "cheat     Give yourself invincibility.\n" +
-                    "freeze    Freeze all enemies in place.\n" +
-                    "debug     Show debug info.\n" +
-                    "exit      Exit game.");
+            return ("Keys:\n" +
+                    "Arrows/WASD  Move and turn\n" +
+                    "Q/E          Strafe left/right\n" +
+                    "Space/mouse1 Fire\n" +
+                    "TAB          Show status\n" +
+                    "X            Show/hide crosshair\n" +
+                    "R            Show/hide frame rate\n\n" +
+                    "Commands:\n" +
+                    "stats        Show stats\n" +
+                    "volume x     Set audio volume (from 0 to " + VOLUME_SCALE + ")\n" +
+                    "shading      Enable/disable depth shading\n" +
+                    "scaling      Enable/disable auto pixel scaling\n" +
+                    "level x      Skip to level x (from 1 to " + NUM_LEVELS + ")\n" +
+                    "ammo         Give yourself some ammo\n" +
+                    "health       Give yourself a health kit\n" +
+                    "key x        Give yourself key x (from 1 to " + Key.NUM_KEYS + ")\n" +
+                    "cheat        Give yourself invincibility\n" +
+                    "freeze       Freeze all enemies in place\n" +
+                    "debug        Show debug info");
         } else if ("CLEAR".equalsIgnoreCase(command)) {
             App.getApp().getLog().clear();
             return null;
-        } else if ("EXIT".equalsIgnoreCase(command) && App.getApp().dispose()) {
-            return "Exiting...";
         } else if ("4 8 15 16 23 42".equalsIgnoreCase(command)) {
             return "Timer reset to 108 minutes.";
         } else if ("STATS".equalsIgnoreCase(command)) {
@@ -672,9 +681,11 @@ public class GameScene extends Scene {
         secretsLabel.sizeToFit();
         enemiesLabel.setText("Enemies: " + player.getKills() + "/" + map.getNumEnemies());
         enemiesLabel.sizeToFit();
-        if (ticksUntilHideSpecialStats > 0) {
-            ticksUntilHideSpecialStats--;
-            if (ticksUntilHideSpecialStats <= 0) {
+        if (specialStats.isVisible()) {
+            if (ticksUntilHideSpecialStats > 0) {
+                ticksUntilHideSpecialStats--;
+            }
+            if (!keyTab && ticksUntilHideSpecialStats <= 0) {
                 specialStats.setVisible(false);
                 normalStats.setVisible(true);
             }
