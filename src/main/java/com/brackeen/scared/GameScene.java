@@ -395,6 +395,8 @@ public class GameScene extends Scene {
         if (gameOverBackground != null) {
             gameOverBackground.setSize(getWidth(), getHeight());
         }
+
+        updateGunLocation();
     }
 
     private void setMessage(String message) {
@@ -691,45 +693,60 @@ public class GameScene extends Scene {
             }
         }
 
-        if (player.isAlive()) {
-            float displayWeaponOffset = crosshair.getX();
-            displayWeaponOffset = Math.max(displayWeaponOffset, 32);
-            displayWeaponOffset = Math.min(displayWeaponOffset, getWidth() -  gunView.getWidth());
+        updateGunLocation();
+    }
 
-            // Make the gun bob
-            float v = Math.abs(runVelocity) + Math.abs(strafeVelocity);
-            v = Math.min(v, MAX_RUN_VELOCITY);
-            double angle = (System.currentTimeMillis() / 80.0) % (Math.PI * 2);
-            int maxBob = (int) Math.ceil(gunView.getHeight() * 0.75f * MAX_RUN_VELOCITY);
-            int bob = (int) Math.round(gunView.getHeight() * 0.75f * v * Math.sin(angle));
+    private void updateGunLocation() {
+        if (map == null) {
+            return;
+        }
+        Player player = map.getPlayer();
 
-            float x = gunView.getWidth() * 0.4f + displayWeaponOffset;
-            float y = Math.round(getHeight() + bob - gunView.getWidth() + maxBob);
+        if (!player.isAlive()) {
+            gunBlastCountdown = 0;
+        }
 
-            if (gunBlastCountdown > 0) {
-                gunBlastCountdown--;
-                gunBlastView.setVisible(true);
-                gunView.setVisible(false);
-                x += 3;
-                y += 8;
-            } else {
-                gunBlastView.setVisible(false);
-                gunView.setVisible(true);
-            }
+        float displayWeaponOffset = crosshair.getX();
+        displayWeaponOffset = Math.max(displayWeaponOffset, 32);
+        displayWeaponOffset = Math.min(displayWeaponOffset, getWidth() -  gunView.getWidth());
 
-            float stepSize = Math.round(getWidth() / 64);
-            float dx = x - gunView.getX();
-            if (Math.abs(dx) > stepSize) {
-                x = gunView.getX() + Math.signum(dx) * stepSize;
-            }
+        // Make the gun bob
+        float velocity = Math.abs(runVelocity) + Math.abs(strafeVelocity);
+        velocity = Math.min(velocity, MAX_RUN_VELOCITY);
+        double angle = (System.currentTimeMillis() / 80.0) % (Math.PI * 2);
+        int maxBob = (int) Math.ceil(gunView.getHeight() * 0.75f * MAX_RUN_VELOCITY);
+        int bob = (int) Math.round(gunView.getHeight() * 0.75f * velocity * Math.sin(angle));
 
-            gunBlastView.setLocation((int) x, (int) y);
-            gunView.setLocation((int) x, (int) y);
+        float x = gunView.getWidth() * 0.4f + displayWeaponOffset;
+        float y = Math.round(getHeight() + bob - gunView.getWidth() + maxBob);
+
+        if (gunBlastCountdown > 0) {
+            gunBlastCountdown--;
+            gunBlastView.setVisible(true);
+            gunView.setVisible(false);
+            x += 3;
+            y += 8;
         } else {
             gunBlastView.setVisible(false);
             gunView.setVisible(true);
-            gunBlastCountdown = 0;
         }
+
+        float stepSize = Math.round(getWidth() / 64);
+        float dx = x - gunView.getX();
+        if (Math.abs(dx) > stepSize) {
+            x = gunView.getX() + Math.signum(dx) * stepSize;
+        }
+        if (!player.isAlive()) {
+            stepSize = (int)Math.ceil(gunView.getHeight() / 48);
+            y += gunView.getHeight() + maxBob;
+            float dy = y - gunView.getY();
+            if (Math.abs(dy) > stepSize) {
+                y = gunView.getY() + Math.signum(dy) * stepSize;
+            }
+        }
+
+        gunBlastView.setLocation((int) x, (int) y);
+        gunView.setLocation((int) x, (int) y);
     }
 
     private void resetKeys() {
