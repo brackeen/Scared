@@ -248,9 +248,16 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     private void setPixelScale() {
         if (autoPixelScale) {
             float area = getWidth() * getHeight();
-            float areaFactor = (float) (Math.sqrt(area / (autoPixelScaleBaseWidth * autoPixelScaleBaseHeight)));
-            int pixelScale = (int) Math.round(0.8 + Math.log(areaFactor) / Math.log(2));
-            pixelScale = Math.max(1, pixelScale);
+            float areaFactor = area / (autoPixelScaleBaseWidth * autoPixelScaleBaseHeight);
+            float scale = (float) (Math.log(areaFactor) / Math.log(2));
+            int pixelScale;
+            if (scale < 2.0) {
+                pixelScale = Math.max(1, (int) Math.ceil(scale));
+            } else if (scale < 4.0) {
+                pixelScale = Math.round(scale);
+            } else {
+                pixelScale = (int) Math.floor(scale);
+            }
             setPixelScale(pixelScale);
         } else {
             setPixelScale(1);
