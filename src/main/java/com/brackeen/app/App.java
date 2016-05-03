@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -97,14 +98,13 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
 
     private JFrame frame;
     private String appName = "App";
+    private final float simulationRate = 60;
     private final float frameRate = 60;
-    private final Timer timer = new Timer(1, new ActionListener() {
-
+    private final Timer timer = new Timer(0, new ActionListener() {
         // Using Swing's Timer because it executes on the EDT, so there will be no threading issues.
         public void actionPerformed(ActionEvent ae) {
             tick();
         }
-
     });
     private long lastTime = 0;
     private double remainingTime = 0;
@@ -180,6 +180,16 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         log.clear();
         canvas = null;
         removeAll();
+    }
+
+    @Override
+    public void update(Graphics g) {
+        // Do nothing
+    }
+
+    @Override
+    public void paint(Graphics g) {
+        // Do nothing
     }
 
     protected void initFrame(int width, int height) {
@@ -266,7 +276,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
 
     private synchronized void tick() {
         long tickTime = System.nanoTime();
-        if (tickTime - lastTickTime < 1000000000 / frameRate - 750000) {
+        if (tickTime - lastTickTime < 1000000000 / frameRate - 500000) {
             return;
         } else {
             lastTickTime = tickTime;
@@ -329,13 +339,13 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
 
             // Tick
             double elapsedTime = (System.nanoTime() - lastTime) / 1000000000.0 + remainingTime;
-            int ticks = (int) (frameRate * elapsedTime);
+            int ticks = (int) (simulationRate * elapsedTime);
             if (ticks > 0) {
                 if (ticks > 4) {
                     ticks = 4;
                     remainingTime = 0;
                 } else {
-                    remainingTime = Math.max(0, elapsedTime - ticks / frameRate);
+                    remainingTime = Math.max(0, elapsedTime - ticks / simulationRate);
                 }
                 for (int i = 0; i < ticks; i++) {
                     if (sceneStack.size() == 0) {
@@ -381,7 +391,9 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                             getHeightForScene(),
                             BufferedImage.TYPE_INT_RGB);
                 }
-                scene.draw(pixelScaleBufferedImage.createGraphics());
+                Graphics2D g2 = pixelScaleBufferedImage.createGraphics();
+                scene.draw(g2);
+                g2.dispose();
                 g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                         RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
                 g.setTransform(AffineTransform.getScaleInstance(pixelScale, pixelScale));
