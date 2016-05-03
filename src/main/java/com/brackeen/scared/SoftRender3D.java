@@ -737,13 +737,19 @@ public class SoftRender3D extends View {
                 found = true;
                 break;
             } else if (tile.type == Tile.TYPE_DOOR) {
-                int f_extraX = (f_rayDX - Integer.signum(f_rayDX)) / 2;
-                int f_extraY = (f_rayDY - Integer.signum(f_rayDY)) / 2;
+                int f_extraX = f_rayDX / 2;
+                int f_extraY = f_rayDY / 2;
                 int s = tile.renderState;
                 if (checkingY) {
-                    sliver = fracPart(f_rayY + f_extraY);
+                    sliver = fracPart(f_rayY) + f_extraY;
                 } else {
-                    sliver = fracPart(f_rayX + f_extraX);
+                    sliver = fracPart(f_rayX) + f_extraX;
+                }
+
+                if (sliver < 0) {
+                    sliver = 0;
+                } else if (sliver >= ONE) {
+                    sliver = ONE - 1;
                 }
 
                 if (s <= sliver) {
