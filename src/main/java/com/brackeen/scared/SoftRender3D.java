@@ -6,14 +6,9 @@ import com.brackeen.scared.entity.Entity;
 import com.brackeen.scared.entity.Player;
 
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.RenderingHints;
 import java.awt.Transparency;
-import java.awt.image.AreaAveragingScaleFilter;
 import java.awt.image.BufferedImage;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.ImageFilter;
-import java.awt.image.ImageProducer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -147,7 +142,6 @@ public class SoftRender3D extends View {
     private final SoftTexture[] generatorTextures = new SoftTexture[2];
     private final SoftTexture[] exitTextures = new SoftTexture[2];
 
-    private float fov;
     private float focalDistance;
     private boolean drawDepthShading = true;
 
@@ -207,10 +201,6 @@ public class SoftRender3D extends View {
         }
     }
 
-    public float getFov() {
-        return fov;
-    }
-
     public boolean isDepthShadingEnabled() {
         return drawDepthShading;
     }
@@ -230,7 +220,7 @@ public class SoftRender3D extends View {
 
     @Override
     public void onResize() {
-        fov = getWidth() * 45 / getHeight(); // 60 degrees for 640x480
+        float fov = getWidth() * 45.0f / getHeight(); // 60 degrees for 640x480
         fov = Math.max(MIN_FOV, fov);
         fov = Math.min(MAX_FOV, fov);
         int w = (int) getWidth();
@@ -268,15 +258,13 @@ public class SoftRender3D extends View {
     }
 
     private static BufferedImage getScaledInstance(BufferedImage srcImage, int width, int height) {
-        ImageFilter filter = new AreaAveragingScaleFilter(width, height);
-        ImageProducer producer = new FilteredImageSource(srcImage.getSource(), filter);
-        Image scaledImage = Toolkit.getDefaultToolkit().createImage(producer);
-
         boolean srcIsOpaque = srcImage.getTransparency() == Transparency.OPAQUE;
         BufferedImage buf = new BufferedImage(width, height,
                 srcIsOpaque ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = buf.createGraphics();
-        g.drawImage(scaledImage, 0, 0, null);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g.drawImage(srcImage, 0, 0, width, height, null);
         g.dispose();
         return buf;
     }
