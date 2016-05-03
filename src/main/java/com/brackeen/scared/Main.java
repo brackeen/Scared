@@ -4,17 +4,11 @@ import com.brackeen.app.App;
 import com.brackeen.app.BufferedAudio;
 import com.brackeen.app.view.Scene;
 
-import java.util.prefs.Preferences;
-
 import javax.swing.SwingUtilities;
 
 public class Main extends App {
 
     private static final long serialVersionUID = 1L;
-
-    public static final String SETTING_AUTO_PIXEL_SCALE = "autoPixelScale";
-    public static final String SETTING_DEPTH_SHADING = "depthShading";
-    public static final String SETTING_VOLUME = "volume";
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -26,11 +20,10 @@ public class Main extends App {
     }
 
     public Main() {
-        Preferences prefs = Preferences.userNodeForPackage(Main.class);
-        BufferedAudio.setMasterVolume(prefs.getFloat(Main.SETTING_VOLUME, 1.0f));
+        BufferedAudio.setMasterVolume(Settings.getFloat(Settings.VOLUME, 1.0f));
 
         setAppName("Scared");
-        setAutoPixelScale(prefs.getBoolean(Main.SETTING_AUTO_PIXEL_SCALE, true));
+        setAutoPixelScale(Settings.getBoolean(Settings.AUTO_PIXEL_SCALE, true));
         setAutoPixelScaleBaseSize(320, 240);
     }
 

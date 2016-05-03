@@ -30,7 +30,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 public class GameScene extends Scene {
 
@@ -140,9 +139,8 @@ public class GameScene extends Scene {
         blastTextures[1] = textureCache.get("/sprites/blast2.png");
         blastTextures[2] = textureCache.get("/sprites/blast3.png");
 
-        Preferences prefs = Preferences.userNodeForPackage(Main.class);
         this.renderer = new SoftRender3D(textureCache);
-        renderer.setDepthShadingEnabled(prefs.getBoolean(Main.SETTING_DEPTH_SHADING, true));
+        renderer.setDepthShadingEnabled(Settings.getBoolean(Settings.DEPTH_SHADING, true));
         addSubview(renderer);
 
         // Crosshair
@@ -536,13 +534,11 @@ public class GameScene extends Scene {
                     "entities=" + map.getNumEntities());
         } else if ("SHADING".equalsIgnoreCase(command)) {
             renderer.setDepthShadingEnabled(!renderer.isDepthShadingEnabled());
-            Preferences prefs = Preferences.userNodeForPackage(Main.class);
-            prefs.putBoolean(Main.SETTING_DEPTH_SHADING, renderer.isDepthShadingEnabled());
+            Settings.putBoolean(Settings.DEPTH_SHADING, renderer.isDepthShadingEnabled());
             return "Depth shading is now " + (renderer.isDepthShadingEnabled() ? "on" : "off");
         } else if ("SCALING".equalsIgnoreCase(command)) {
             App.getApp().setAutoPixelScale(!App.getApp().isAutoPixelScale());
-            Preferences prefs = Preferences.userNodeForPackage(Main.class);
-            prefs.putBoolean(Main.SETTING_AUTO_PIXEL_SCALE, App.getApp().isAutoPixelScale());
+            Settings.putBoolean(Settings.AUTO_PIXEL_SCALE, App.getApp().isAutoPixelScale());
             return "Auto pixel scaling is now " + (App.getApp().isAutoPixelScale() ? "on" : "off");
         } else if ("FREEZE".equalsIgnoreCase(command)) {
             player.setFreezeEnemies(!player.isFreezeEnemies());
@@ -612,8 +608,7 @@ public class GameScene extends Scene {
                 volume =  Math.round(BufferedAudio.getMasterVolume() * VOLUME_SCALE);
             } else {
                 BufferedAudio.setMasterVolume(volume / (float)VOLUME_SCALE);
-                Preferences prefs = Preferences.userNodeForPackage(Main.class);
-                prefs.putFloat(Main.SETTING_VOLUME, BufferedAudio.getMasterVolume());
+                Settings.putFloat(Settings.VOLUME, BufferedAudio.getMasterVolume());
             }
             return "Volume set to " + volume;
         } else {
@@ -634,7 +629,6 @@ public class GameScene extends Scene {
         if (nextAction != ACTION_NONE) {
             nextActionTicksRemaining--;
             if (nextActionTicksRemaining <= 0) {
-
                 if (nextAction == ACTION_NEW_LEVEL) {
                     nextLevelAction();
                 } else if (nextAction == ACTION_WIN) {
