@@ -605,9 +605,9 @@ public class GameScene extends Scene {
                 volume = -1;
             }
             if (volume < 0 || volume > VOLUME_SCALE) {
-                volume =  Math.round(BufferedAudio.getMasterVolume() * VOLUME_SCALE);
+                volume = Math.round(BufferedAudio.getMasterVolume() * VOLUME_SCALE);
             } else {
-                BufferedAudio.setMasterVolume(volume / (float)VOLUME_SCALE);
+                BufferedAudio.setMasterVolume(volume / (float) VOLUME_SCALE);
                 Settings.putFloat(Settings.VOLUME, BufferedAudio.getMasterVolume());
             }
             return "Volume set to " + volume;
@@ -702,7 +702,7 @@ public class GameScene extends Scene {
 
         float displayWeaponOffset = crosshair.getX();
         displayWeaponOffset = Math.max(displayWeaponOffset, 32);
-        displayWeaponOffset = Math.min(displayWeaponOffset, getWidth() -  gunView.getWidth());
+        displayWeaponOffset = Math.min(displayWeaponOffset, getWidth() - gunView.getWidth());
 
         // Make the gun bob
         float velocity = Math.abs(runVelocity) + Math.abs(strafeVelocity);
@@ -731,7 +731,7 @@ public class GameScene extends Scene {
             x = gunView.getX() + Math.signum(dx) * stepSize;
         }
         if (!player.isAlive()) {
-            stepSize = (int)Math.ceil(gunView.getHeight() / 48);
+            stepSize = (int) Math.ceil(gunView.getHeight() / 48);
             y += gunView.getHeight() + maxBob;
             float dy = y - gunView.getY();
             if (Math.abs(dy) > stepSize) {
