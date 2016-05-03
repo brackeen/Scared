@@ -279,10 +279,28 @@ public class View {
     }
 
     public void addSubview(View subview) {
+        addSubview(subview, subviews.size());
+    }
+
+    public void addSubview(View subview, int index) {
+        if (index < 0) {
+            index = 0;
+        } else if (index > subviews.size()) {
+            index = subviews.size();
+        }
         subview.removeFromSuperview();
-        subviews.add(subview);
+        subviews.add(index, subview);
         subview.superview = this;
         superviewTransformModCount = -1;
+    }
+
+    public int indexOfSubview(View subview) {
+        for (int i = 0; i < subviews.size(); i++) {
+            if (subview == subviews.get(i)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public void notifySuperviewDirty() {

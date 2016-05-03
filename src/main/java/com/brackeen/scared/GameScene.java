@@ -824,7 +824,7 @@ public class GameScene extends Scene {
         if (gameOverBackground == null) {
             gameOverBackground = new View(0, 0, getWidth(), getHeight());
             gameOverBackground.setBackgroundColor(new Color(0, 0, 0, 0.25f));
-            addSubview(gameOverBackground);
+            addSubview(gameOverBackground, indexOfSubview(renderer) + 1);
         }
         setGameOverMessage("YOU WIN.\n\n" + statsDescription + "\n\n");
     }
