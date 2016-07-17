@@ -706,7 +706,7 @@ public class GameScene extends Scene {
         velocity = Math.min(velocity, MAX_RUN_VELOCITY);
         double angle = (System.currentTimeMillis() / 80.0) % (Math.PI * 2);
         int maxBob = (int) Math.ceil(gunView.getHeight() * 0.75f * MAX_RUN_VELOCITY);
-        int bob = (int) Math.round(gunView.getHeight() * 0.75f * velocity * Math.sin(angle));
+        int bob = (int) Math.round(gunView.getHeight() * 0.75f * velocity * (Math.sin(angle) + 0.5f));
 
         float x = gunView.getWidth() * 0.4f + displayWeaponOffset;
         float y = Math.round(getHeight() + bob - gunView.getWidth() + maxBob);
