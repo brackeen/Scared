@@ -262,8 +262,20 @@ public class SoftRender3D extends View {
         BufferedImage buf = new BufferedImage(width, height,
                 srcIsOpaque ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = buf.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        if (App.getApp().isAutoPixelScale()) {
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        } else {
+            if (width > srcImage.getWidth() || height > srcImage.getHeight()) {
+                // Create half-size image first, to blur the image a bit
+                BufferedImage halfSizeImage = SoftTexture.createHalfSizeImage(srcImage);
+                if (halfSizeImage != null) {
+                    srcImage = halfSizeImage;
+                }
+            }
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        }
         g.drawImage(srcImage, 0, 0, width, height, null);
         g.dispose();
         return buf;

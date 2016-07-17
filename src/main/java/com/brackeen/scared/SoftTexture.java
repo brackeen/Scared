@@ -56,6 +56,16 @@ public class SoftTexture {
         }
     }
 
+    public static BufferedImage createHalfSizeImage(BufferedImage image) {
+        SoftTexture texture = new SoftTexture(image);
+        boolean success = texture.createHalfSizeTexture(DownscaleType.AVERAGE);
+        if (success) {
+            return texture.getHalfSizeTexture().getBufferedImageView();
+        } else {
+            return null;
+        }
+    }
+
     private final int width;
     private final int height;
     private final int sizeBits;
@@ -130,66 +140,68 @@ public class SoftTexture {
         return new BufferedImage(colorModel, raster, true, null);
     }
 
-    public void createHalfSizeTexture(DownscaleType downscaleType) {
-        if (sizeBits > 0) {
-            halfSizeTexture = new SoftTexture(width / 2, height / 2);
-            int srcOffset = 0;
-            int dstOffset = 0;
-            for (int y = 0; y < width; y += 2) {
-                switch (downscaleType) {
-                    case AVERAGE:
-                        for (int x = 0; x < height; x += 2) {
-                            int c1 = data[srcOffset];
-                            int c2 = data[srcOffset + 1];
-                            int c3 = data[srcOffset + width];
-                            int c4 = data[srcOffset + width + 1];
-
-                            int a = ((c1 >>> 24) + (c2 >>> 24) + (c3 >>> 24) + (c4 >>> 24)) >> 2;
-                            int r = (((c1 >> 16) & 0xff) + ((c2 >> 16) & 0xff) + ((c3 >> 16) & 0xff) + ((c4 >> 16) & 0xff)) >> 2;
-                            int g = (((c1 >> 8) & 0xff) + ((c2 >> 8) & 0xff) + ((c3 >> 8) & 0xff) + ((c4 >> 8) & 0xff)) >> 2;
-                            int b = ((c1 & 0xff) + (c2 & 0xff) + (c3 & 0xff) + (c4 & 0xff)) >> 2;
-
-                            halfSizeTexture.data[dstOffset++] = (a << 24) | (r << 16) | (g << 8) | b;
-                            srcOffset += 2;
-                        }
-                        break;
-                    case WEIGHTED_EVEN:
-                        for (int x = 0; x < height; x += 2) {
-                            int c1 = data[srcOffset];
-                            int c2 = data[srcOffset + 1];
-                            int c3 = data[srcOffset + width];
-                            int c4 = data[srcOffset + width + 1];
-
-                            int a = ((c1 >>> 24) * 5 + (c2 >>> 24) + (c3 >>> 24) + (c4 >>> 24)) >> 3;
-                            int r = (((c1 >> 16) & 0xff) * 5 + ((c2 >> 16) & 0xff) + ((c3 >> 16) & 0xff) + ((c4 >> 16) & 0xff)) >> 3;
-                            int g = (((c1 >> 8) & 0xff) * 5 + ((c2 >> 8) & 0xff) + ((c3 >> 8) & 0xff) + ((c4 >> 8) & 0xff)) >> 3;
-                            int b = ((c1 & 0xff) * 5 + (c2 & 0xff) + (c3 & 0xff) + (c4 & 0xff)) >> 3;
-
-                            halfSizeTexture.data[dstOffset++] = (a << 24) | (r << 16) | (g << 8) | b;
-                            srcOffset += 2;
-                        }
-                        break;
-                    case WEIGHTED_ODD:
-                        for (int x = 0; x < height; x += 2) {
-                            int c1 = data[srcOffset];
-                            int c2 = data[srcOffset + 1];
-                            int c3 = data[srcOffset + width];
-                            int c4 = data[srcOffset + width + 1];
-
-                            int a = ((c1 >>> 24) + (c2 >>> 24) + (c3 >>> 24) + (c4 >>> 24) * 5) >> 3;
-                            int r = (((c1 >> 16) & 0xff) + ((c2 >> 16) & 0xff) + ((c3 >> 16) & 0xff) + ((c4 >> 16) & 0xff) * 5) >> 3;
-                            int g = (((c1 >> 8) & 0xff) + ((c2 >> 8) & 0xff) + ((c3 >> 8) & 0xff) + ((c4 >> 8) & 0xff) * 5) >> 3;
-                            int b = ((c1 & 0xff) + (c2 & 0xff) + (c3 & 0xff) + (c4 & 0xff) * 5) >> 3;
-
-                            halfSizeTexture.data[dstOffset++] = (a << 24) | (r << 16) | (g << 8) | b;
-                            srcOffset += 2;
-                        }
-                        break;
-                }
-
-                srcOffset += width;
-            }
+    public boolean createHalfSizeTexture(DownscaleType downscaleType) {
+        if ((width & 1) != 0 || (height & 1) != 0) {
+            return false;
         }
+        halfSizeTexture = new SoftTexture(width / 2, height / 2);
+        int srcOffset = 0;
+        int dstOffset = 0;
+        for (int y = 0; y < height; y += 2) {
+            switch (downscaleType) {
+                case AVERAGE:
+                    for (int x = 0; x < width; x += 2) {
+                        int c1 = data[srcOffset];
+                        int c2 = data[srcOffset + 1];
+                        int c3 = data[srcOffset + width];
+                        int c4 = data[srcOffset + width + 1];
+
+                        int a = ((c1 >>> 24) + (c2 >>> 24) + (c3 >>> 24) + (c4 >>> 24)) >> 2;
+                        int r = (((c1 >> 16) & 0xff) + ((c2 >> 16) & 0xff) + ((c3 >> 16) & 0xff) + ((c4 >> 16) & 0xff)) >> 2;
+                        int g = (((c1 >> 8) & 0xff) + ((c2 >> 8) & 0xff) + ((c3 >> 8) & 0xff) + ((c4 >> 8) & 0xff)) >> 2;
+                        int b = ((c1 & 0xff) + (c2 & 0xff) + (c3 & 0xff) + (c4 & 0xff)) >> 2;
+
+                        halfSizeTexture.data[dstOffset++] = (a << 24) | (r << 16) | (g << 8) | b;
+                        srcOffset += 2;
+                    }
+                    break;
+                case WEIGHTED_EVEN:
+                    for (int x = 0; x < width; x += 2) {
+                        int c1 = data[srcOffset];
+                        int c2 = data[srcOffset + 1];
+                        int c3 = data[srcOffset + width];
+                        int c4 = data[srcOffset + width + 1];
+
+                        int a = ((c1 >>> 24) * 5 + (c2 >>> 24) + (c3 >>> 24) + (c4 >>> 24)) >> 3;
+                        int r = (((c1 >> 16) & 0xff) * 5 + ((c2 >> 16) & 0xff) + ((c3 >> 16) & 0xff) + ((c4 >> 16) & 0xff)) >> 3;
+                        int g = (((c1 >> 8) & 0xff) * 5 + ((c2 >> 8) & 0xff) + ((c3 >> 8) & 0xff) + ((c4 >> 8) & 0xff)) >> 3;
+                        int b = ((c1 & 0xff) * 5 + (c2 & 0xff) + (c3 & 0xff) + (c4 & 0xff)) >> 3;
+
+                        halfSizeTexture.data[dstOffset++] = (a << 24) | (r << 16) | (g << 8) | b;
+                        srcOffset += 2;
+                    }
+                    break;
+                case WEIGHTED_ODD:
+                    for (int x = 0; x < width; x += 2) {
+                        int c1 = data[srcOffset];
+                        int c2 = data[srcOffset + 1];
+                        int c3 = data[srcOffset + width];
+                        int c4 = data[srcOffset + width + 1];
+
+                        int a = ((c1 >>> 24) + (c2 >>> 24) + (c3 >>> 24) + (c4 >>> 24) * 5) >> 3;
+                        int r = (((c1 >> 16) & 0xff) + ((c2 >> 16) & 0xff) + ((c3 >> 16) & 0xff) + ((c4 >> 16) & 0xff) * 5) >> 3;
+                        int g = (((c1 >> 8) & 0xff) + ((c2 >> 8) & 0xff) + ((c3 >> 8) & 0xff) + ((c4 >> 8) & 0xff) * 5) >> 3;
+                        int b = ((c1 & 0xff) + (c2 & 0xff) + (c3 & 0xff) + (c4 & 0xff) * 5) >> 3;
+
+                        halfSizeTexture.data[dstOffset++] = (a << 24) | (r << 16) | (g << 8) | b;
+                        srcOffset += 2;
+                    }
+                    break;
+            }
+
+            srcOffset += width;
+        }
+        return true;
     }
 
     /**
