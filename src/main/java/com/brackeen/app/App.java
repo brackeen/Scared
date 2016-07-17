@@ -12,13 +12,12 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
@@ -46,8 +45,6 @@ import java.util.Stack;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
 /**
@@ -103,12 +100,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     private final float simulationRate = 60;
     private final float frameRate = 60;
     private float audioSampleRate = 44100;
-    private final Timer timer = new Timer(0, new ActionListener() {
-        // Using Swing's Timer because it executes on the EDT, so there will be no threading issues.
-        public void actionPerformed(ActionEvent ae) {
-            tick();
-        }
-    });
+    private boolean gameLoopRunning = false;
     private long lastTime = 0;
     private double remainingTime = 0;
     private long lastTickTime = 0;
@@ -156,12 +148,18 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         actualFrameRate = 0;
         actualFrameRateLastTime = 0;
         actualFrameRateTickCount = 0;
-        timer.start();
+        gameLoopRunning = true;
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                tick();
+            }
+        });
     }
 
     @Override
     public synchronized void stop() {
-        timer.stop();
+        gameLoopRunning = false;
     }
 
     @Override
@@ -244,7 +242,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             final JFrame thisFrame = frame;
             frame = null;
             stop();
-            SwingUtilities.invokeLater(new Runnable() {
+            EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     thisFrame.dispatchEvent(new WindowEvent(thisFrame, WindowEvent.WINDOW_CLOSING));
@@ -276,8 +274,27 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     }
 
     private synchronized void tick() {
+        if (gameLoopRunning) {
+            doTick();
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    tick();
+                }
+            });
+        }
+    }
+
+    private void doTick() {
         long tickTime = System.nanoTime();
-        if (tickTime - lastTickTime < 1000000000 / frameRate - 500000) {
+        if (tickTime - lastTickTime < 1000000000 / frameRate) {
+            if (tickTime - lastTickTime < 1000000000 / frameRate - 2000000) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException ex) {
+                    // Do nothing
+                }
+            }
             return;
         } else {
             lastTickTime = tickTime;

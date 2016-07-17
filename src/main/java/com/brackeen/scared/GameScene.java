@@ -662,7 +662,7 @@ public class GameScene extends Scene {
         for (int i = 0; i < Key.NUM_KEYS; i++) {
             keys[i].setVisible(player.hasKey(i + 1));
         }
-        fpsLabel.setText(String.format("%.2f fps", App.getApp().getActualFrameRate()));
+        fpsLabel.setText(String.format("%.1f fps", App.getApp().getActualFrameRate()));
         fpsLabel.sizeToFit();
         healthLabel.setText(Integer.toString(player.getHealth()));
         healthLabel.sizeToFit();
