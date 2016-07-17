@@ -1,7 +1,7 @@
 package com.brackeen.scared;
 
 import com.brackeen.app.App;
-import com.brackeen.app.BufferedAudio;
+import com.brackeen.app.audio.AudioBuffer;
 import com.brackeen.scared.entity.Entity;
 
 public class SoundPlayer3D {
@@ -13,7 +13,7 @@ public class SoundPlayer3D {
     private static final int MAX_DIST = 24;
 
     public static void play(String audioName, Entity listener, int sourceTileX, int sourceTileY) {
-        BufferedAudio audio = App.getApp().getAudio(audioName, 1);
+        AudioBuffer audio = App.getApp().getAudio(audioName);
         if (audio != null) {
             audio.play(getVolume(listener, sourceTileX, sourceTileY),
                     getPan(listener, sourceTileX, sourceTileY),
@@ -22,7 +22,7 @@ public class SoundPlayer3D {
     }
 
     public static void play(String audioName, Entity listener, Entity source) {
-        BufferedAudio audio = App.getApp().getAudio(audioName, 1);
+        AudioBuffer audio = App.getApp().getAudio(audioName);
         if (audio != null) {
             audio.play(getVolume(listener, source),
                     getPan(listener, source),
@@ -66,7 +66,7 @@ public class SoundPlayer3D {
 
     private static float getPan(float listenerDirection, float sourceX, float sourceY) {
         // Vector a = direction of player view
-        // Vector b = direction of sounce source (from player)
+        // Vector b = direction of sound source (from player)
         // side = the side point b is on of line a (1, 0, or -1)
         // pan = side * (1 - abs((a.b)/(|a|*|b|)))
 

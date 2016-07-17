@@ -1,7 +1,7 @@
 package com.brackeen.scared;
 
 import com.brackeen.app.App;
-import com.brackeen.app.BufferedAudio;
+import com.brackeen.app.audio.AudioEngine;
 import com.brackeen.app.view.Scene;
 
 import javax.swing.SwingUtilities;
@@ -20,9 +20,10 @@ public class Main extends App {
     }
 
     public Main() {
-        BufferedAudio.setMasterVolume(Settings.getFloat(Settings.VOLUME, 1.0f));
+        AudioEngine.setMasterVolume(Settings.getFloat(Settings.VOLUME, 1.0f));
 
         setAppName("Scared");
+        setAudioSampleRate(8000);
         setAutoPixelScale(Settings.getBoolean(Settings.AUTO_PIXEL_SCALE, true));
         setAutoPixelScaleBaseSize(320, 240);
     }

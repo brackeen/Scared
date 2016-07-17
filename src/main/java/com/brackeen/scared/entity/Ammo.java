@@ -18,7 +18,7 @@ public class Ammo extends Entity {
     public void notifyPlayerCollision(Player player) {
         int ammo = player.getAmmo();
         if (ammo < Player.MAX_AMMO) {
-            App.getApp().getAudio("/sound/getammo.wav", 1).play();
+            App.getApp().getAudio("/sound/getammo.wav").play();
 
             map.setMessage("You got some ammo");
             player.setAmmo(Math.min(ammo + 20, Player.MAX_AMMO));

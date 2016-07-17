@@ -21,12 +21,12 @@ public class MedKit extends Entity {
         int health = player.getHealth();
         if (!nuclear && health < Player.MAX_HEALTH) {
             map.setMessage("You got a med kit");
-            App.getApp().getAudio("/sound/getammo.wav", 1).play();
+            App.getApp().getAudio("/sound/getammo.wav").play();
             player.setHealth(Math.min(health + 20, Player.MAX_HEALTH));
             delete();
         } else if (nuclear && player.getHealth() < Player.MAX_NUCLEAR_HEALTH) {
             map.setMessage("N*U*C*L*E*A*R");
-            App.getApp().getAudio("/sound/nuclear_health.wav", 1).play();
+            App.getApp().getAudio("/sound/nuclear_health.wav").play();
             player.setHealth(Player.MAX_NUCLEAR_HEALTH);
             delete();
         }

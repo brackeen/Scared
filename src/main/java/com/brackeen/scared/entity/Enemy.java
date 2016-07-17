@@ -249,7 +249,7 @@ public class Enemy extends Entity {
                 if (player.isFreezeEnemies()) {
                     setState(STATE_TERMINATE);
                 } else if (ticksRemaining <= 0) {
-                    App.getApp().getAudio("/sound/laser0.wav", 1).play();
+                    App.getApp().getAudio("/sound/laser0.wav").play();
                     stats.numEnemyShotsFired++;
 
                     // fire shot
@@ -285,7 +285,7 @@ public class Enemy extends Entity {
                 if (ticksRemaining <= 0 || health <= 0) {
 
                     if (health <= 0) {
-                        App.getApp().getAudio("/sound/enemy_dead.wav", 1).play();
+                        App.getApp().getAudio("/sound/enemy_dead.wav").play();
                         setState(STATE_DYING);
                     } else if (Math.random() < .666) {
                         setState(STATE_TERMINATE);

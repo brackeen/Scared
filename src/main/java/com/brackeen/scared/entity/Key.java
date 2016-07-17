@@ -22,7 +22,7 @@ public class Key extends Entity {
 
     @Override
     public void notifyPlayerCollision(Player player) {
-        App.getApp().getAudio("/sound/unlock.wav", 1).play();
+        App.getApp().getAudio("/sound/unlock.wav").play();
         map.setMessage("You got the " + KEY_COLORS[type] + " key");
         player.addKey(type);
         delete();

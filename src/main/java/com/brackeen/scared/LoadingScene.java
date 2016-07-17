@@ -44,22 +44,21 @@ public class LoadingScene extends BaseConsoleScene {
         itemsToLoad.add(new Runnable() {
             @Override
             public void run() {
-                // Number of loaded audio buffers must be 32 or less, due to a Java Sound limitation.
-                app.getAudio("/sound/bigfan.wav", 1);
-                app.getAudio("/sound/doorclose.wav", 2);
-                app.getAudio("/sound/doorwoosh.wav", 2);
-                app.getAudio("/sound/endlevel.wav", 1);
-                app.getAudio("/sound/enemy_dead.wav", 2);
-                app.getAudio("/sound/getammo.wav", 4);
-                app.getAudio("/sound/laser0.wav", 4);
-                app.getAudio("/sound/laser1.wav", 4);
-                app.getAudio("/sound/no_ammo.wav", 4);
-                app.getAudio("/sound/nuclear_health.wav", 1);
-                app.getAudio("/sound/player_dead.wav", 1);
-                app.getAudio("/sound/player_hurt.wav", 3);
-                app.getAudio("/sound/startlevel.wav", 1);
-                app.getAudio("/sound/unlock.wav", 1);
-                app.getAudio("/sound/wallmove.wav", 1);
+                app.getAudio("/sound/bigfan.wav");
+                app.getAudio("/sound/doorclose.wav");
+                app.getAudio("/sound/doorwoosh.wav");
+                app.getAudio("/sound/endlevel.wav");
+                app.getAudio("/sound/enemy_dead.wav");
+                app.getAudio("/sound/getammo.wav");
+                app.getAudio("/sound/laser0.wav");
+                app.getAudio("/sound/laser1.wav");
+                app.getAudio("/sound/no_ammo.wav");
+                app.getAudio("/sound/nuclear_health.wav");
+                app.getAudio("/sound/player_dead.wav");
+                app.getAudio("/sound/player_hurt.wav");
+                app.getAudio("/sound/startlevel.wav");
+                app.getAudio("/sound/unlock.wav");
+                app.getAudio("/sound/wallmove.wav");
             }
         });
 

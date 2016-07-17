@@ -1,5 +1,7 @@
 package com.brackeen.app;
 
+import com.brackeen.app.audio.AudioBuffer;
+import com.brackeen.app.audio.AudioEngine;
 import com.brackeen.app.view.Scene;
 import com.brackeen.app.view.View;
 
@@ -100,6 +102,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     private String appName = "App";
     private final float simulationRate = 60;
     private final float frameRate = 60;
+    private float audioSampleRate = 44100;
     private final Timer timer = new Timer(0, new ActionListener() {
         // Using Swing's Timer because it executes on the EDT, so there will be no threading issues.
         public void actionPerformed(ActionEvent ae) {
@@ -121,7 +124,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     private final List<String> log = new ArrayList<>();
 
     private final HashMap<String, WeakReference<BufferedImage>> imageCache = new HashMap<>();
-    private final HashMap<String, BufferedAudio> loadedAudio = new HashMap<>();
+    private final HashMap<String, AudioBuffer> loadedAudio = new HashMap<>();
     private final Stack<Scene> sceneStack = new Stack<>();
     private List<View> prevViewsWithTouchInside = new ArrayList<>();
     private List<View> currViewsWithTouchInside = new ArrayList<>();
@@ -143,7 +146,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
 
     @Override
     public synchronized void init() {
-
+        AudioEngine.init(audioSampleRate);
     }
 
     @Override
@@ -170,9 +173,6 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
             bufferStrategy.dispose();
             bufferStrategy = null;
         }
-        for (BufferedAudio audio : loadedAudio.values()) {
-            audio.dispose();
-        }
         loadedAudio.clear();
         imageCache.clear();
         prevViewsWithTouchInside.clear();
@@ -180,6 +180,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         log.clear();
         canvas = null;
         removeAll();
+        AudioEngine.destroy();
     }
 
     @Override
@@ -430,6 +431,14 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         this.appName = appName;
     }
 
+    public float getAudioSampleRate() {
+        return audioSampleRate;
+    }
+
+    public void setAudioSampleRate(float audioSampleRate) {
+        this.audioSampleRate = audioSampleRate;
+    }
+
     public float getActualFrameRate() {
         return actualFrameRate;
     }
@@ -491,17 +500,16 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
     }
 
     /**
-     * Get an audio file. The first time the audio is loaded, the maxSimultaneousStreams param
-     * sets how many times the audio file can be played at the same time. If the audio file was
-     * previously loaded, the maxSimultaneousStreams is ignored.
+     * Get an audio file. The audio is cached in memory. If the audio couldn't be loaded, a blank
+     * audio buffer is returned - this method never returns null.
      */
-    public BufferedAudio getAudio(String audioName, int maxSimultaneousStreams) {
-        BufferedAudio audio = loadedAudio.get(audioName);
+    public AudioBuffer getAudio(String audioName) {
+        AudioBuffer audio = loadedAudio.get(audioName);
         if (audio == null && audioName != null) {
             try {
                 URL url = getResource(audioName);
                 if (url != null) {
-                    audio = BufferedAudio.read(url, maxSimultaneousStreams);
+                    audio = AudioBuffer.read(url);
                     if (audio != null) {
                         loadedAudio.put(audioName, audio);
                     }
@@ -513,17 +521,13 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
 
         if (audio == null) {
             logError("Could not load audio: " + audioName);
-            audio = BufferedAudio.DUMMY_AUDIO;
+            audio = AudioBuffer.BLANK_AUDIO;
         }
         return audio;
     }
 
     public void unloadAudio(String audioName) {
-        BufferedAudio audio = loadedAudio.get(audioName);
-        if (audio != null) {
-            loadedAudio.remove(audioName);
-            audio.dispose();
-        }
+        loadedAudio.remove(audioName);
     }
 
     /**

@@ -39,7 +39,7 @@ public class MovableWallAction implements Action {
         map.setDefaultFloorTexture(playerTile.getTexture());
         floorTexture = playerTile.getTexture();
 
-        App.getApp().getAudio("/sound/wallmove.wav", 1).play();
+        App.getApp().getAudio("/sound/wallmove.wav").play();
         index = 0;
         ticks = 0;
     }

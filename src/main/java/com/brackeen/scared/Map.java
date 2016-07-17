@@ -414,7 +414,7 @@ public class Map {
             if (tile.state == 0) {
                 tile.state = 1;
                 tile.setTexture(exitButtonOnTexture);
-                App.getApp().getAudio("/sound/endlevel.wav", 1).play();
+                App.getApp().getAudio("/sound/endlevel.wav").play();
                 exitFound = true;
             }
         } else if (tile.type == Tile.TYPE_GENERATOR) {
@@ -430,10 +430,10 @@ public class Map {
                 lastCollidedWall = tile;
                 if (!electricityOn) {
                     setMessage("The power is off");
-                    App.getApp().getAudio("/sound/no_ammo.wav", 1).play();
+                    App.getApp().getAudio("/sound/no_ammo.wav").play();
                 } else if (!player.hasKey(tile.subtype)) {
                     setMessage("The door is locked");
-                    App.getApp().getAudio("/sound/no_ammo.wav", 1).play();
+                    App.getApp().getAudio("/sound/no_ammo.wav").play();
                 }
             }
         }

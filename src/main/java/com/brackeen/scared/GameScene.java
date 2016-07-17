@@ -2,7 +2,7 @@ package com.brackeen.scared;
 
 import com.brackeen.app.App;
 import com.brackeen.app.BitmapFont;
-import com.brackeen.app.BufferedAudio;
+import com.brackeen.app.audio.AudioEngine;
 import com.brackeen.app.view.ImageView;
 import com.brackeen.app.view.Label;
 import com.brackeen.app.view.Scene;
@@ -402,10 +402,7 @@ public class GameScene extends Scene {
     }
 
     private void playSound(String soundName) {
-        BufferedAudio audio = App.getApp().getAudio(soundName, 1);
-        if (audio != null) {
-            audio.play();
-        }
+        App.getApp().getAudio(soundName).play();
     }
 
     private void setLevel(int level) {
@@ -605,10 +602,10 @@ public class GameScene extends Scene {
                 volume = -1;
             }
             if (volume < 0 || volume > VOLUME_SCALE) {
-                volume = Math.round(BufferedAudio.getMasterVolume() * VOLUME_SCALE);
+                volume = Math.round(AudioEngine.getMasterVolume() * VOLUME_SCALE);
             } else {
-                BufferedAudio.setMasterVolume(volume / (float) VOLUME_SCALE);
-                Settings.putFloat(Settings.VOLUME, BufferedAudio.getMasterVolume());
+                AudioEngine.setMasterVolume(volume / (float) VOLUME_SCALE);
+                Settings.putFloat(Settings.VOLUME, AudioEngine.getMasterVolume());
             }
             return "Volume set to " + volume;
         } else {
