@@ -32,6 +32,10 @@ public class DoorAction implements Action {
         tile = map.getTileAt(x, y);
 
         SoundPlayer3D.play("/sound/doorwoosh.wav", map.getPlayer(), x, y);
+
+        if (tile.subtype > 0) {
+            SoundPlayer3D.play("/sound/door_unlock.wav", map.getPlayer(), x, y);
+        }
         setState(OPENING);
     }
 

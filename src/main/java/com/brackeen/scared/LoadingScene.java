@@ -45,6 +45,7 @@ public class LoadingScene extends BaseConsoleScene {
             @Override
             public void run() {
                 app.getAudio("/sound/bigfan.wav");
+                app.getAudio("/sound/door_unlock.wav");
                 app.getAudio("/sound/doorclose.wav");
                 app.getAudio("/sound/doorwoosh.wav");
                 app.getAudio("/sound/endlevel.wav");
