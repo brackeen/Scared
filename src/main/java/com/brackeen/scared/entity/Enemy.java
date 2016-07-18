@@ -1,8 +1,10 @@
 package com.brackeen.scared.entity;
 
 import com.brackeen.app.App;
+import com.brackeen.app.audio.AudioBuffer;
 import com.brackeen.scared.Map;
 import com.brackeen.scared.SoftTexture;
+import com.brackeen.scared.SoundPlayer3D;
 import com.brackeen.scared.Stats;
 
 import java.awt.geom.Point2D;
@@ -249,7 +251,7 @@ public class Enemy extends Entity {
                 if (player.isFreezeEnemies()) {
                     setState(STATE_TERMINATE);
                 } else if (ticksRemaining <= 0) {
-                    App.getApp().getAudio("/sound/laser0.wav").play();
+                    playSound3D("/sound/laser0.wav", 1.5f, 0.5f);
                     stats.numEnemyShotsFired++;
 
                     // fire shot
@@ -283,9 +285,8 @@ public class Enemy extends Entity {
 
             case STATE_HURT:
                 if (ticksRemaining <= 0 || health <= 0) {
-
                     if (health <= 0) {
-                        App.getApp().getAudio("/sound/enemy_dead.wav").play();
+                        playSound3D("/sound/enemy_dead.wav", 1.5f, 0.4f);
                         setState(STATE_DYING);
                     } else if (Math.random() < .666) {
                         setState(STATE_TERMINATE);
@@ -295,7 +296,6 @@ public class Enemy extends Entity {
                         aimAngle = angleToPlayer;
                         setState(STATE_FIRE);
                     }
-
                 }
                 break;
 
@@ -344,5 +344,16 @@ public class Enemy extends Entity {
         }
 
         return false;
+    }
+
+    private void playSound3D(String audioName, float gain, float minVolume) {
+        AudioBuffer audio = App.getApp().getAudio(audioName);
+        if (audio != null) {
+            Entity listener = map.getPlayer();
+            Entity source = this;
+            audio.play(Math.max(minVolume, SoundPlayer3D.getVolume(listener, source) * gain),
+                    SoundPlayer3D.getPan(listener, source),
+                    false);
+        }
     }
 }

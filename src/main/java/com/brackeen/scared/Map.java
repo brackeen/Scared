@@ -373,7 +373,7 @@ public class Map {
     private boolean isUnlockedDoor(int tileX, int tileY) {
         Tile tile = getTileAt(tileX, tileY);
         if (tile != null) {
-            if (tile.type == Tile.TYPE_DOOR && player.hasKey(tile.subtype)) {
+            if (tile.type == Tile.TYPE_DOOR && player.hasKey(tile.getDoorType())) {
                 return true;
             }
         }
@@ -431,7 +431,7 @@ public class Map {
                 if (!electricityOn) {
                     setMessage("The power is off");
                     App.getApp().getAudio("/sound/no_ammo.wav").play();
-                } else if (!player.hasKey(tile.subtype)) {
+                } else if (!player.hasKey(tile.getDoorType())) {
                     setMessage("The door is locked");
                     App.getApp().getAudio("/sound/no_ammo.wav").play();
                 }

@@ -72,4 +72,26 @@ public class Tile {
             entities.remove(entity);
         }
     }
+
+    public int getDoorType() {
+        if (type == TYPE_DOOR) {
+            return subtype & 0x1f;
+        } else {
+            return 0;
+        }
+    }
+
+    public boolean isDoorUnlocked() {
+        return type == TYPE_DOOR && ((subtype & 0x1f) == 0 || (subtype & 0x20) != 0);
+    }
+
+    public void setDoorUnlocked(boolean unlocked) {
+        if (type == TYPE_DOOR && (subtype & 0x1f) != 0) {
+            if (unlocked) {
+                subtype |= 0x20;
+            } else {
+                subtype &= ~0x20;
+            }
+        }
+    }
 }

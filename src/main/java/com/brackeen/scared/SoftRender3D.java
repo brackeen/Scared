@@ -768,7 +768,7 @@ public class SoftRender3D extends View {
                     sliver -= s;
                     f_rayX += f_extraX;
                     f_rayY += f_extraY;
-                    texture = doorTextures[tile.subtype];
+                    texture = doorTextures[tile.getDoorType()];
                     found = true;
                     break;
                 }

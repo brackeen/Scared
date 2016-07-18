@@ -31,12 +31,14 @@ public class DoorAction implements Action {
         this.y = y;
         tile = map.getTileAt(x, y);
 
-        SoundPlayer3D.play("/sound/doorwoosh.wav", map.getPlayer(), x, y);
-
-        if (tile.subtype > 0) {
-            SoundPlayer3D.play("/sound/door_unlock.wav", map.getPlayer(), x, y);
-        }
         setState(OPENING);
+        if (tile.isDoorUnlocked()) {
+            SoundPlayer3D.play("/sound/doorwoosh.wav", map.getPlayer(), x, y);
+        } else {
+            tile.setDoorUnlocked(true);
+            SoundPlayer3D.play("/sound/door_unlock.wav", map.getPlayer(), x, y);
+            ticks = -4; // Delay a bit before opening
+        }
     }
 
     public int getTileX() {
@@ -72,9 +74,17 @@ public class DoorAction implements Action {
 
         ticks++;
 
+        if (state == OPENING && ticks == 0) {
+            SoundPlayer3D.play("/sound/doorwoosh.wav", map.getPlayer(), x, y);
+        }
+
         // State set outside of this handler
         if (state != tile.state) {
             setState(tile.state);
+        }
+
+        if (ticks < 0) {
+            return;
         }
 
         switch (state) {
