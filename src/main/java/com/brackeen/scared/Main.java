@@ -23,6 +23,7 @@ public class Main extends App {
         AudioEngine.setMasterVolume(Settings.getFloat(Settings.VOLUME, 1.0f));
 
         setAppName("Scared");
+        setAppIcon("/textures/exit01.png");
         setAudioSampleRate(8000);
         setAutoPixelScale(Settings.getBoolean(Settings.AUTO_PIXEL_SCALE, true));
         setAutoPixelScaleBaseSize(320, 240);

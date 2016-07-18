@@ -97,6 +97,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
 
     private JFrame frame;
     private String appName = "App";
+    private BufferedImage iconImage;
     private final float simulationRate = 60;
     private final float frameRate = 60;
     private float audioSampleRate = 44100;
@@ -195,6 +196,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         // Create frame
         frame = new JFrame(appName);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setIconImage(iconImage);
         enableOSXFullscreen(frame);
 
         // Add applet to contentPane
@@ -234,6 +236,30 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                 IllegalArgumentException | InvocationTargetException | ClassNotFoundException ex) {
             // Ignore
+        }
+    }
+
+    public void setAppIcon(String imageName) {
+        iconImage = getImage(imageName);
+        if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+            // Mac OS X appears to want a 128x128 image
+            final int iconSize = 128;
+            BufferedImage image = new BufferedImage(iconSize, iconSize, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = image.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            g.drawImage(iconImage, 0, 0, iconSize, iconSize, null);
+            g.dispose();
+
+            try {
+                Class c = Class.forName("com.apple.eawt.Application");
+                Method m = c.getMethod("getApplication");
+                Object applicationInstance = m.invoke(null);
+                m = applicationInstance.getClass().getMethod("setDockIconImage", java.awt.Image.class);
+                m.invoke(applicationInstance, image);
+            } catch (Exception ex) {
+                // Ignore
+            }
         }
     }
 
