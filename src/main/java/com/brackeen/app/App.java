@@ -257,7 +257,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
                 Object applicationInstance = m.invoke(null);
                 m = applicationInstance.getClass().getMethod("setDockIconImage", java.awt.Image.class);
                 m.invoke(applicationInstance, image);
-            } catch (Exception ex) {
+            } catch (Throwable t) {
                 // Ignore
             }
         }
