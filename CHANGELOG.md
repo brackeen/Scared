@@ -1,6 +1,6 @@
 # Change Log
 
-## Version 1.9 (unreleased)
+## Version 1.9 (July 19, 2016)
 * Classic: Use original fonts, original gun, original 64x64 enemies, no title or help screen.
 * Resizable window with pixel scaling.
 * Better 3D audio (panning, real-time volume changes).
@@ -169,7 +169,8 @@
 * Warning for users with Java 1.0
 * Fixed framerate calculation
 
-## Version 1.1 (March 22, 1998)* Fixed MovableWallHandler bug which was the same as the DoorHandler bug. 
+## Version 1.1 (March 22, 1998)
+* Fixed MovableWallHandler bug which was the same as the DoorHandler bug. 
 * Fixed several aiming bugs. You can now kill an enemy with 2-4 shots, depending on how good your aim is. 
 * Keys now appear on the screen when you get them. 
 * Press 'x' to show the aiming crosshair. 
