@@ -1,5 +1,8 @@
 # Change Log
 
+## Version 1.9.1 (September 21, 2016)
+* Fix key input issue on macOS Sierra.
+
 ## Version 1.9 (July 19, 2016)
 * Classic: Use original fonts, original gun, original 64x64 enemies, no title or help screen.
 * Resizable window with pixel scaling.
