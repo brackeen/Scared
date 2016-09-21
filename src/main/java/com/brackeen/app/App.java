@@ -15,6 +15,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -28,7 +29,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
+import java.awt.font.TextHitInfo;
 import java.awt.geom.AffineTransform;
+import java.awt.im.InputMethodRequests;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -38,6 +41,8 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -348,7 +353,7 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         }
         if (bufferStrategy == null) {
             removeAll();
-            canvas = new Canvas();
+            canvas = new AppCanvas();
             canvas.setSize(getWidth(), getHeight());
             canvas.setLocation(0, 0);
             setLayout(null);
@@ -831,6 +836,82 @@ public abstract class App extends Applet implements MouseListener, MouseMotionLi
         FocusListener focusListener = getFocusedViewFocusListener();
         if (focusListener != null) {
             focusListener.focusLost(e);
+        }
+    }
+
+    private static class AppCanvas extends Canvas implements InputMethodRequests {
+
+        private final InputMethodRequests inputMethodRequests;
+
+        public AppCanvas() {
+            if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+                // macOS Sierra prevents key input after holding certain keys (like 'e' or 'n')
+                // because of a native input method popup that isn't working with Java correctly.
+                //
+                // This will still fail is some scenarios, like when pressing a digit after
+                // holding 'e'. The digit will not have a keypress event.
+                //
+                // Tested on macOS 10.12.0 and Java 8 versions b76 - b101.
+                // (This may also be happening on older versions of macOS if the
+                // ApplePressAndHoldEnabled option is set to true - untested at the moment.)
+                //
+                // This workaround keeps key input working by allowing the popup to appear,
+                // but places it offscreen.
+                //
+                // Note, input methods are enabled by default.
+                inputMethodRequests = this;
+            } else {
+                // On all other operating systems, disable input methods normally.
+                inputMethodRequests = null;
+                enableInputMethods(false);
+            }
+        }
+
+        @Override
+        public InputMethodRequests getInputMethodRequests() {
+            return inputMethodRequests;
+        }
+
+        // MARK: InputMethodRequests implementation
+
+        @Override
+        public Rectangle getTextLocation(TextHitInfo textHitInfo) {
+            // In screen coordinates, not window coordinates.
+            return new Rectangle(-32768, -32768, 0, 0);
+        }
+
+        @Override
+        public TextHitInfo getLocationOffset(int x, int y) {
+            return null;
+        }
+
+        @Override
+        public int getInsertPositionOffset() {
+            return 0;
+        }
+
+        @Override
+        public AttributedCharacterIterator getCommittedText(int beginIndex, int endIndex,
+                                                            AttributedCharacterIterator.Attribute[] attributes) {
+            return null;
+        }
+
+        @Override
+        public int getCommittedTextLength() {
+            return 0;
+        }
+
+        @Override
+        public AttributedCharacterIterator cancelLatestCommittedText(AttributedCharacterIterator.Attribute[] attributes) {
+            return null;
+        }
+
+        private static final AttributedCharacterIterator EMPTY_TEXT =
+                (new AttributedString("")).getIterator();
+
+        @Override
+        public AttributedCharacterIterator getSelectedText(AttributedCharacterIterator.Attribute[] attributes) {
+            return EMPTY_TEXT;
         }
     }
 }
